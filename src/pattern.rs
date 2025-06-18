@@ -76,8 +76,7 @@ impl Pattern {
                         .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
                     {
                         return Err(SubjectError::invalid_pattern(format!(
-                            "Token '{}' contains invalid characters",
-                            literal
+                            "Token '{literal}' contains invalid characters"
                         )));
                     }
                     tokens.push(Token::Literal(literal.to_string()));
@@ -89,12 +88,12 @@ impl Pattern {
     }
 
     /// Check if a subject matches this pattern
-    pub fn matches(&self, subject: &Subject) -> bool {
+    #[must_use] pub fn matches(&self, subject: &Subject) -> bool {
         self.matches_str(subject.as_str())
     }
 
     /// Check if a subject string matches this pattern
-    pub fn matches_str(&self, subject: &str) -> bool {
+    #[must_use] pub fn matches_str(&self, subject: &str) -> bool {
         let subject_parts: Vec<&str> = subject.split('.').collect();
         self.matches_parts(&subject_parts)
     }
@@ -130,7 +129,7 @@ impl Pattern {
     }
 
     /// Get the raw pattern string
-    pub fn as_str(&self) -> &str {
+    #[must_use] pub fn as_str(&self) -> &str {
         &self.raw
     }
 
@@ -138,7 +137,7 @@ impl Pattern {
     ///
     /// A pattern is more specific if it has fewer wildcards or
     /// more literal tokens before wildcards
-    pub fn is_more_specific_than(&self, other: &Pattern) -> bool {
+    #[must_use] pub fn is_more_specific_than(&self, other: &Pattern) -> bool {
         // First, check if one has a multi-wildcard and the other doesn't
         let self_has_multi = self.tokens.iter().any(|t| matches!(t, Token::MultiWildcard));
         let other_has_multi = other.tokens.iter().any(|t| matches!(t, Token::MultiWildcard));

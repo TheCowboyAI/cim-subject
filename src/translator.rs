@@ -24,7 +24,7 @@ impl Default for Translator {
 
 impl Translator {
     /// Create a new translator
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             rules: Arc::new(DashMap::new()),
             reverse_cache: Arc::new(DashMap::new()),
@@ -68,18 +68,18 @@ impl Translator {
     }
 
     /// Create a bidirectional translator
-    pub fn bidirectional(
+    #[must_use] pub fn bidirectional(
         forward_rules: Vec<TranslationRule>,
         reverse_rules: Vec<TranslationRule>,
     ) -> Self {
         let translator = Self::new();
 
         for (i, rule) in forward_rules.into_iter().enumerate() {
-            translator.register_rule(format!("forward_{}", i), rule);
+            translator.register_rule(format!("forward_{i}"), rule);
         }
 
         for (i, rule) in reverse_rules.into_iter().enumerate() {
-            translator.register_rule(format!("reverse_{}", i), rule);
+            translator.register_rule(format!("reverse_{i}"), rule);
         }
 
         translator
@@ -118,7 +118,7 @@ impl TranslationRule {
     }
 
     /// Add a target pattern for validation
-    pub fn with_target_pattern(mut self, pattern: Pattern) -> Self {
+    #[must_use] pub fn with_target_pattern(mut self, pattern: Pattern) -> Self {
         self.target_pattern = Some(pattern);
         self
     }
@@ -133,16 +133,15 @@ impl TranslationRule {
     }
 
     /// Check if this rule matches a source subject
-    pub fn matches_source(&self, subject: &Subject) -> bool {
+    #[must_use] pub fn matches_source(&self, subject: &Subject) -> bool {
         self.source_pattern.matches(subject)
     }
 
     /// Check if this rule matches a target subject
-    pub fn matches_target(&self, subject: &Subject) -> bool {
+    #[must_use] pub fn matches_target(&self, subject: &Subject) -> bool {
         self.target_pattern
             .as_ref()
-            .map(|p| p.matches(subject))
-            .unwrap_or(false)
+            .is_some_and(|p| p.matches(subject))
     }
 
     /// Translate a subject
@@ -153,8 +152,7 @@ impl TranslationRule {
         if let Some(target_pattern) = &self.target_pattern {
             if !target_pattern.matches(&result) {
                 return Err(SubjectError::translation_error(format!(
-                    "Translation result '{}' does not match target pattern '{}'",
-                    result, target_pattern
+                    "Translation result '{result}' does not match target pattern '{target_pattern}'"
                 )));
             }
         }
@@ -194,7 +192,7 @@ pub struct TranslatorBuilder {
 
 impl TranslatorBuilder {
     /// Create a new translator builder
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self::default()
     }
 
@@ -208,7 +206,7 @@ impl TranslatorBuilder {
         let template = target_template.to_string();
 
         let rule = TranslationRule::new(
-            format!("map_{}", source_pattern),
+            format!("map_{source_pattern}"),
             pattern,
             Arc::new(move |subject| {
                 // Simple template replacement
@@ -231,11 +229,11 @@ impl TranslatorBuilder {
         from_context: &str,
         to_context: &str,
     ) -> Result<Self> {
-        let pattern = Pattern::new(&format!("{}.>", from_context))?;
+        let pattern = Pattern::new(format!("{from_context}.>"))?;
         let to_ctx = to_context.to_string();
 
         let rule = TranslationRule::new(
-            format!("context_{}_{}", from_context, to_context),
+            format!("context_{from_context}_{to_context}"),
             pattern,
             Arc::new(move |subject| {
                 let parts = SubjectParts::new(
@@ -259,7 +257,7 @@ impl TranslatorBuilder {
     }
 
     /// Build the translator
-    pub fn build(self) -> Translator {
+    #[must_use] pub fn build(self) -> Translator {
         let translator = Translator::new();
 
         for (name, rule) in self.rules {

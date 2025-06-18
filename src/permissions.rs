@@ -23,7 +23,7 @@ impl Default for Permissions {
 
 impl Permissions {
     /// Create new permissions with a default policy
-    pub fn new(default_policy: Policy) -> Self {
+    #[must_use] pub fn new(default_policy: Policy) -> Self {
         Self {
             rules: Vec::new(),
             default_policy,
@@ -36,7 +36,7 @@ impl Permissions {
     }
 
     /// Check if an operation is allowed on a subject
-    pub fn is_allowed(&self, subject: &Subject, operation: Operation) -> bool {
+    #[must_use] pub fn is_allowed(&self, subject: &Subject, operation: Operation) -> bool {
         // Collect all matching rules
         let mut matching_rules: Vec<&PermissionRule> = self.rules
             .iter()
@@ -64,22 +64,22 @@ impl Permissions {
     }
 
     /// Check if publishing to a subject is allowed
-    pub fn can_publish(&self, subject: &Subject) -> bool {
+    #[must_use] pub fn can_publish(&self, subject: &Subject) -> bool {
         self.is_allowed(subject, Operation::Publish)
     }
 
     /// Check if subscribing to a subject is allowed
-    pub fn can_subscribe(&self, subject: &Subject) -> bool {
+    #[must_use] pub fn can_subscribe(&self, subject: &Subject) -> bool {
         self.is_allowed(subject, Operation::Subscribe)
     }
 
     /// Check if requesting on a subject is allowed
-    pub fn can_request(&self, subject: &Subject) -> bool {
+    #[must_use] pub fn can_request(&self, subject: &Subject) -> bool {
         self.is_allowed(subject, Operation::Request)
     }
 
     /// Get all allowed subjects for an operation from a list
-    pub fn filter_allowed(&self, subjects: &[Subject], operation: Operation) -> Vec<Subject> {
+    #[must_use] pub fn filter_allowed(&self, subjects: &[Subject], operation: Operation) -> Vec<Subject> {
         subjects
             .iter()
             .filter(|s| self.is_allowed(s, operation))
@@ -93,7 +93,7 @@ impl Permissions {
     }
 
     /// Create a more restrictive permission set (intersection)
-    pub fn intersect(&self, other: &Permissions) -> Permissions {
+    #[must_use] pub fn intersect(&self, other: &Permissions) -> Permissions {
         let mut result = Permissions::new(Policy::Deny);
 
         // For each rule in self that allows
@@ -152,7 +152,7 @@ pub struct PermissionRule {
 
 impl PermissionRule {
     /// Create a new permission rule
-    pub fn new(pattern: Pattern, operations: HashSet<Operation>, policy: Policy) -> Self {
+    #[must_use] pub fn new(pattern: Pattern, operations: HashSet<Operation>, policy: Policy) -> Self {
         Self {
             pattern,
             operations,
@@ -162,12 +162,12 @@ impl PermissionRule {
     }
 
     /// Create an allow rule
-    pub fn allow(pattern: Pattern, operations: HashSet<Operation>) -> Self {
+    #[must_use] pub fn allow(pattern: Pattern, operations: HashSet<Operation>) -> Self {
         Self::new(pattern, operations, Policy::Allow)
     }
 
     /// Create a deny rule
-    pub fn deny(pattern: Pattern, operations: HashSet<Operation>) -> Self {
+    #[must_use] pub fn deny(pattern: Pattern, operations: HashSet<Operation>) -> Self {
         Self::new(pattern, operations, Policy::Deny)
     }
 
@@ -178,7 +178,7 @@ impl PermissionRule {
     }
 
     /// Check if this rule matches a subject and operation
-    pub fn matches(&self, subject: &Subject, operation: Operation) -> bool {
+    #[must_use] pub fn matches(&self, subject: &Subject, operation: Operation) -> bool {
         self.pattern.matches(subject) && self.operations.contains(&operation)
     }
 }
@@ -198,7 +198,7 @@ pub enum Operation {
 
 impl Operation {
     /// Get all basic operations (not including All)
-    pub fn all_operations() -> HashSet<Operation> {
+    #[must_use] pub fn all_operations() -> HashSet<Operation> {
         let mut ops = HashSet::new();
         ops.insert(Operation::Publish);
         ops.insert(Operation::Subscribe);
@@ -225,12 +225,12 @@ pub struct PermissionsBuilder {
 
 impl PermissionsBuilder {
     /// Create a new permissions builder
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self::default()
     }
 
     /// Set the default policy
-    pub fn default_policy(mut self, policy: Policy) -> Self {
+    #[must_use] pub fn default_policy(mut self, policy: Policy) -> Self {
         self.default_policy = Some(policy);
         self
     }
@@ -262,7 +262,7 @@ impl PermissionsBuilder {
     }
 
     /// Build the permissions
-    pub fn build(self) -> Permissions {
+    #[must_use] pub fn build(self) -> Permissions {
         let default_policy = self.default_policy.unwrap_or(Policy::Deny);
         let mut perms = Permissions::new(default_policy);
         perms.rules = self.rules;

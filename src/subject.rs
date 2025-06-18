@@ -27,43 +27,43 @@ impl Subject {
     }
 
     /// Create a subject from pre-parsed parts
-    pub fn from_parts(parts: SubjectParts) -> Self {
+    #[must_use] pub fn from_parts(parts: SubjectParts) -> Self {
         let raw = parts.to_string();
         Self { raw, parts }
     }
 
     /// Get the raw subject string
-    pub fn as_str(&self) -> &str {
+    #[must_use] pub fn as_str(&self) -> &str {
         &self.raw
     }
 
     /// Get the parsed parts
-    pub fn parts(&self) -> &SubjectParts {
+    #[must_use] pub fn parts(&self) -> &SubjectParts {
         &self.parts
     }
 
     /// Decompose into parts
-    pub fn into_parts(self) -> SubjectParts {
+    #[must_use] pub fn into_parts(self) -> SubjectParts {
         self.parts
     }
 
     /// Get the context component
-    pub fn context(&self) -> &str {
+    #[must_use] pub fn context(&self) -> &str {
         &self.parts.context
     }
 
     /// Get the aggregate component
-    pub fn aggregate(&self) -> &str {
+    #[must_use] pub fn aggregate(&self) -> &str {
         &self.parts.aggregate
     }
 
     /// Get the event type component
-    pub fn event_type(&self) -> &str {
+    #[must_use] pub fn event_type(&self) -> &str {
         &self.parts.event_type
     }
 
     /// Get the version component
-    pub fn version(&self) -> &str {
+    #[must_use] pub fn version(&self) -> &str {
         &self.parts.version
     }
 
@@ -156,8 +156,7 @@ impl SubjectParts {
             }
             if !part.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
                 return Err(SubjectError::invalid_format(format!(
-                    "Subject part '{}' contains invalid characters in '{}'",
-                    part, subject
+                    "Subject part '{part}' contains invalid characters in '{subject}'"
                 )));
             }
         }
@@ -171,7 +170,7 @@ impl SubjectParts {
     }
 
     /// Convert back to a subject string
-    pub fn to_subject(&self) -> String {
+    #[must_use] pub fn to_subject(&self) -> String {
         format!(
             "{}.{}.{}.{}",
             self.context, self.aggregate, self.event_type, self.version
@@ -204,7 +203,7 @@ pub struct SubjectBuilder {
 
 impl SubjectBuilder {
     /// Create a new subject builder
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self::default()
     }
 

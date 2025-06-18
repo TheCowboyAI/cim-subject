@@ -24,7 +24,7 @@ impl Default for SubjectAlgebra {
 
 impl SubjectAlgebra {
     /// Create a new Subject Algebra instance
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             rules: Arc::new(DashMap::new()),
             transformations: Arc::new(DashMap::new()),
@@ -86,7 +86,7 @@ impl SubjectAlgebra {
         let parts = SubjectParts::new(
             left.context(), // Use left's context as primary
             format!("{}|{}", left.aggregate(), right.aggregate()),
-            format!("choice_{}", condition),
+            format!("choice_{condition}"),
             "v1",
         );
         Ok(Subject::from_parts(parts))
@@ -97,7 +97,7 @@ impl SubjectAlgebra {
         let transform = self
             .transformations
             .get(transform_name)
-            .ok_or_else(|| SubjectError::not_found(format!("Transformation '{}'", transform_name)))?;
+            .ok_or_else(|| SubjectError::not_found(format!("Transformation '{transform_name}'")))?;
 
         transform.apply(subject)
     }
@@ -126,7 +126,7 @@ impl SubjectAlgebra {
     }
 
     /// Find all subjects matching a pattern
-    pub fn find_matching(&self, pattern: &Pattern, subjects: &[Subject]) -> Vec<Subject> {
+    #[must_use] pub fn find_matching(&self, pattern: &Pattern, subjects: &[Subject]) -> Vec<Subject> {
         subjects
             .iter()
             .filter(|s| pattern.matches(s))
@@ -135,7 +135,7 @@ impl SubjectAlgebra {
     }
 
     /// Create a subject lattice (partial order)
-    pub fn create_lattice(&self, subjects: &[Subject]) -> SubjectLattice {
+    #[must_use] pub fn create_lattice(&self, subjects: &[Subject]) -> SubjectLattice {
         SubjectLattice::new(subjects)
     }
 }
@@ -218,7 +218,7 @@ pub struct SubjectLattice {
 
 impl SubjectLattice {
     /// Create a new subject lattice
-    pub fn new(subjects: &[Subject]) -> Self {
+    #[must_use] pub fn new(subjects: &[Subject]) -> Self {
         let mut lattice = Self {
             subjects: subjects.to_vec(),
             ordering: Vec::new(),
@@ -257,7 +257,7 @@ impl SubjectLattice {
     }
 
     /// Find the join (least upper bound) of two subjects
-    pub fn join(&self, a: &Subject, b: &Subject) -> Option<Subject> {
+    #[must_use] pub fn join(&self, a: &Subject, b: &Subject) -> Option<Subject> {
         // Find common ancestors
         let a_idx = self.subjects.iter().position(|s| s == a)?;
         let b_idx = self.subjects.iter().position(|s| s == b)?;

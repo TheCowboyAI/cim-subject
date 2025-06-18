@@ -22,7 +22,7 @@ impl Default for SubjectParser {
 
 impl SubjectParser {
     /// Create a new subject parser
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             rules: Arc::new(DashMap::new()),
             validators: Arc::new(DashMap::new()),
@@ -76,7 +76,7 @@ impl SubjectParser {
     }
 
     /// Create a parser with standard rules
-    pub fn with_standard_rules() -> Self {
+    #[must_use] pub fn with_standard_rules() -> Self {
         let parser = Self::new();
 
         // Add standard validation rules
@@ -181,7 +181,7 @@ pub struct ParserBuilder {
 
 impl ParserBuilder {
     /// Create a new parser builder
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self::default()
     }
 
@@ -201,8 +201,8 @@ impl ParserBuilder {
     pub fn with_flexible_context(mut self, context: impl Into<String>) -> Self {
         let ctx = context.into();
         let rule = ParseRule::new(
-            format!("{}_flexible", ctx),
-            format!("Flexible parsing for {} context", ctx),
+            format!("{ctx}_flexible"),
+            format!("Flexible parsing for {ctx} context"),
             Arc::new(move |subject| {
                 let parts: Vec<&str> = subject.split('.').collect();
                 if parts.len() < 3 {
@@ -226,7 +226,7 @@ impl ParserBuilder {
     }
 
     /// Build the parser
-    pub fn build(self) -> SubjectParser {
+    #[must_use] pub fn build(self) -> SubjectParser {
         let parser = SubjectParser::new();
 
         for (context, rule) in self.rules {
