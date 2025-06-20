@@ -1,6 +1,6 @@
 [package]
 name = "cim-subject"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 authors = ["The CowboyAI Team"]
 description = "Subject Algebra for NATS-based domain routing and message translation"
