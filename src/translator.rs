@@ -6,6 +6,8 @@ use crate::subject::{Subject, SubjectParts};
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use std::collections::HashMap;
+use crate::correlation::MessageIdentity;
 
 /// Translator for converting subjects between different schemas
 #[derive(Clone)]
@@ -83,6 +85,29 @@ impl Translator {
         }
 
         translator
+    }
+
+    /// Translate a domain message to NATS format with correlation
+    pub fn translate_with_correlation(
+        &self,
+        context: &str,
+        aggregate: &str,
+        event: &str,
+        version: &str,
+        payload: serde_json::Value,
+        identity: &MessageIdentity,
+    ) -> Result<NatsMessage> {
+        // Build the subject from parts
+        let subject_str = format!("{}.{}.{}.{}", context, aggregate, event, version);
+        let subject = Subject::new(&subject_str)?;
+        
+        // Translate the subject
+        let translated_subject = self.translate(&subject)?;
+        
+        // Convert to string for NATS
+        let subject_string = translated_subject.to_string();
+        
+        Ok(NatsMessage::with_correlation(subject_string, payload, identity))
     }
 }
 
@@ -290,6 +315,39 @@ pub struct FieldMapping {
     pub target_path: String,
     /// Optional transformation
     pub transform: Option<String>,
+}
+
+/// NATS message representation with headers
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NatsMessage {
+    /// Subject for the message
+    pub subject: String,
+    /// Message payload
+    pub payload: serde_json::Value,
+    /// NATS headers including correlation
+    pub headers: HashMap<String, String>,
+}
+
+impl NatsMessage {
+    /// Create a new NATS message with correlation headers
+    pub fn with_correlation(
+        subject: String,
+        payload: serde_json::Value,
+        identity: &MessageIdentity,
+    ) -> Self {
+        let mut headers = HashMap::new();
+        
+        // Add correlation headers
+        for (key, value) in identity.to_nats_headers() {
+            headers.insert(key.to_string(), value);
+        }
+        
+        Self {
+            subject,
+            payload,
+            headers,
+        }
+    }
 }
 
 #[cfg(test)]

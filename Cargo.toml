@@ -26,6 +26,10 @@ tracing = "0.1"
 # Collections
 dashmap = "6.1"
 
+# IDs and correlation
+uuid = { version = "1.11", features = ["v4", "serde"] }
+cim-ipld = { path = "../cim-ipld" }
+
 [dev-dependencies]
 # Testing
 tokio = { version = "1.43", features = ["full", "test-util"] }
