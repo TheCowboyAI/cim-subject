@@ -5,6 +5,12 @@ use crate::subject::{Subject, SubjectParts};
 use dashmap::DashMap;
 use std::sync::Arc;
 
+/// Type alias for parser functions
+pub type ParserFn = Arc<dyn Fn(&str) -> Result<SubjectParts> + Send + Sync>;
+
+/// Type alias for validator functions
+pub type ValidatorFn = Arc<dyn Fn(&SubjectParts) -> Result<()> + Send + Sync>;
+
 /// Parser for subjects with custom rules
 #[derive(Clone)]
 pub struct SubjectParser {
@@ -40,6 +46,13 @@ impl SubjectParser {
     }
 
     /// Parse a subject string
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The subject string is empty
+    /// - The subject format is invalid
+    /// - Validation rules fail
     pub fn parse(&self, subject: &str) -> Result<Subject> {
         // Extract the context (first part) to check for custom rules
         let parts: Vec<&str> = subject.split('.').collect();
@@ -122,7 +135,7 @@ pub struct ParseRule {
     /// Description
     pub description: String,
     /// Parser function
-    pub parser: Arc<dyn Fn(&str) -> Result<SubjectParts> + Send + Sync>,
+    pub parser: ParserFn,
 }
 
 impl ParseRule {
@@ -130,7 +143,7 @@ impl ParseRule {
     pub fn new(
         name: impl Into<String>,
         description: impl Into<String>,
-        parser: Arc<dyn Fn(&str) -> Result<SubjectParts> + Send + Sync>,
+        parser: ParserFn,
     ) -> Self {
         Self {
             name: name.into(),
@@ -140,6 +153,10 @@ impl ParseRule {
     }
 
     /// Parse a subject using this rule
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the parser function fails
     pub fn parse(&self, subject: &str) -> Result<SubjectParts> {
         (self.parser)(subject)
     }
@@ -151,14 +168,14 @@ pub struct ValidationRule {
     /// Name of the rule
     pub name: String,
     /// Validator function
-    pub validator: Arc<dyn Fn(&SubjectParts) -> Result<()> + Send + Sync>,
+    pub validator: ValidatorFn,
 }
 
 impl ValidationRule {
     /// Create a new validation rule
     pub fn new(
         name: impl Into<String>,
-        validator: Arc<dyn Fn(&SubjectParts) -> Result<()> + Send + Sync>,
+        validator: ValidatorFn,
     ) -> Self {
         Self {
             name: name.into(),
@@ -167,6 +184,10 @@ impl ValidationRule {
     }
 
     /// Validate subject parts
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the validator function fails
     pub fn validate(&self, parts: &SubjectParts) -> Result<()> {
         (self.validator)(parts)
     }
@@ -186,18 +207,21 @@ impl ParserBuilder {
     }
 
     /// Add a parsing rule
+    #[must_use]
     pub fn with_rule(mut self, context: impl Into<String>, rule: ParseRule) -> Self {
         self.rules.push((context.into(), rule));
         self
     }
 
     /// Add a validation rule
+    #[must_use]
     pub fn with_validator(mut self, name: impl Into<String>, validator: ValidationRule) -> Self {
         self.validators.push((name.into(), validator));
         self
     }
 
     /// Add a simple context rule that allows flexible formats
+    #[must_use]
     pub fn with_flexible_context(mut self, context: impl Into<String>) -> Self {
         let ctx = context.into();
         let rule = ParseRule::new(
@@ -276,7 +300,7 @@ mod tests {
                         Ok(SubjectParts::new(
                             "workflow",
                             parts[1], // workflow ID as aggregate
-                            format!("{}_{}", parts[2], parts[3]), // step_status as event
+                            format!("{parts[2]}_{parts[3]}"), // step_status as event
                             "v1",
                         ))
                     }),

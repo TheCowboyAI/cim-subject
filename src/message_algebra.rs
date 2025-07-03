@@ -24,6 +24,10 @@ pub struct CorrelationChain {
 
 impl CorrelationChain {
     /// Create a new chain from a root message
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provided message is not a root message
     pub fn new(root: MessageIdentity) -> Result<Self> {
         if !root.is_root() {
             return Err(CorrelationError::InvalidIdentity(
@@ -43,6 +47,12 @@ impl CorrelationChain {
     }
     
     /// Add a message to the chain
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The message's correlation ID doesn't match the chain
+    /// - The message's parent is not found in the chain
     pub fn add_message(&mut self, message: MessageIdentity) -> Result<()> {
         // Verify correlation matches
         if message.correlation_id != self.root.correlation_id {
@@ -66,7 +76,7 @@ impl CorrelationChain {
             // Add to reverse causation
             self.caused_messages
                 .entry(parent_id.clone())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(message.message_id.clone());
         }
         
@@ -77,6 +87,7 @@ impl CorrelationChain {
     }
     
     /// Get all messages caused by a specific message
+    #[must_use]
     pub fn get_caused_by(&self, message_id: &IdType) -> Vec<&MessageIdentity> {
         self.caused_messages
             .get(message_id)
@@ -89,6 +100,7 @@ impl CorrelationChain {
     }
     
     /// Get the parent message that caused this one
+    #[must_use]
     pub fn get_parent(&self, message_id: &IdType) -> Option<&MessageIdentity> {
         self.causation_graph
             .get(message_id)
@@ -96,6 +108,12 @@ impl CorrelationChain {
     }
     
     /// Get the path from root to a specific message
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The message is not found in the chain
+    /// - The chain is broken (parent missing)
     pub fn get_path_to(&self, message_id: &IdType) -> Result<Vec<&MessageIdentity>> {
         if !self.messages.contains_key(message_id) {
             return Err(CorrelationError::InvalidIdentity(
@@ -127,6 +145,7 @@ impl CorrelationChain {
     }
     
     /// Check if the chain contains cycles
+    #[must_use]
     pub fn has_cycles(&self) -> bool {
         // Use DFS to detect cycles
         let mut visited = HashSet::new();
@@ -171,6 +190,7 @@ impl CorrelationChain {
     }
     
     /// Get the depth of the chain (longest path from root)
+    #[must_use]
     pub fn depth(&self) -> usize {
         let mut max_depth = 0;
         let mut queue = VecDeque::new();
@@ -195,6 +215,10 @@ pub struct MessageAlgebra;
 
 impl MessageAlgebra {
     /// Merge two chains that share a common message
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the chains have different correlation IDs
     pub fn merge_chains(
         chain1: &CorrelationChain,
         chain2: &CorrelationChain,
@@ -210,7 +234,7 @@ impl MessageAlgebra {
         let mut merged = chain1.clone();
         
         // Add all messages from chain2
-        for (_, message) in &chain2.messages {
+        for message in chain2.messages.values() {
             if !merged.messages.contains_key(&message.message_id) {
                 merged.add_message(message.clone())?;
             }
@@ -220,6 +244,10 @@ impl MessageAlgebra {
     }
     
     /// Find common ancestors of two messages in a chain
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either message is not found in the chain
     pub fn find_common_ancestors<'a>(
         chain: &'a CorrelationChain,
         msg1_id: &IdType,
@@ -239,6 +267,10 @@ impl MessageAlgebra {
     }
     
     /// Calculate the distance between two messages in a chain
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either message is not found in the chain
     pub fn distance(
         chain: &CorrelationChain,
         msg1_id: &IdType,

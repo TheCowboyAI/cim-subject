@@ -9,6 +9,12 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use crate::correlation::MessageIdentity;
 
+/// Type alias for translation function
+type TranslateFn = Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>;
+
+/// Type alias for reverse translation function
+type ReverseFn = Option<Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>>;
+
 /// Translator for converting subjects between different schemas
 #[derive(Clone)]
 pub struct Translator {
@@ -39,6 +45,10 @@ impl Translator {
     }
 
     /// Translate a subject using registered rules
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if the translation function fails
     pub fn translate(&self, subject: &Subject) -> Result<Subject> {
         // Find matching rule
         for rule in self.rules.iter() {
@@ -52,6 +62,10 @@ impl Translator {
     }
 
     /// Reverse translate a subject
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if the reverse translation function fails
     pub fn reverse_translate(&self, subject: &Subject) -> Result<Subject> {
         // Check cache first
         if let Some(original) = self.reverse_cache.get(subject.as_str()) {
@@ -88,6 +102,12 @@ impl Translator {
     }
 
     /// Translate a domain message to NATS format with correlation
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if:
+    /// - Subject creation fails
+    /// - Translation fails
     pub fn translate_with_correlation(
         &self,
         context: &str,
@@ -98,7 +118,7 @@ impl Translator {
         identity: &MessageIdentity,
     ) -> Result<NatsMessage> {
         // Build the subject from parts
-        let subject_str = format!("{}.{}.{}.{}", context, aggregate, event, version);
+        let subject_str = format!("{context}.{aggregate}.{event}.{version}");
         let subject = Subject::new(&subject_str)?;
         
         // Translate the subject
@@ -121,9 +141,9 @@ pub struct TranslationRule {
     /// Target pattern (optional, for validation)
     pub target_pattern: Option<Pattern>,
     /// Translation function
-    pub translate_fn: Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>,
+    pub translate_fn: TranslateFn,
     /// Reverse translation function (optional)
-    pub reverse_fn: Option<Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>>,
+    pub reverse_fn: ReverseFn,
 }
 
 impl TranslationRule {
@@ -131,7 +151,7 @@ impl TranslationRule {
     pub fn new(
         name: impl Into<String>,
         source_pattern: Pattern,
-        translate_fn: Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>,
+        translate_fn: TranslateFn,
     ) -> Self {
         Self {
             name: name.into(),
@@ -149,6 +169,7 @@ impl TranslationRule {
     }
 
     /// Add a reverse translation function
+    #[must_use]
     pub fn with_reverse(
         mut self,
         reverse_fn: Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>,
@@ -170,6 +191,12 @@ impl TranslationRule {
     }
 
     /// Translate a subject
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if:
+    /// - The translation function fails
+    /// - The result doesn't match the target pattern (if provided)
     pub fn translate(&self, subject: &Subject) -> Result<Subject> {
         let result = (self.translate_fn)(subject)?;
 
@@ -186,6 +213,12 @@ impl TranslationRule {
     }
 
     /// Reverse translate a subject
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if:
+    /// - No reverse translation function is available
+    /// - The reverse translation function fails
     pub fn reverse_translate(&self, subject: &Subject) -> Result<Subject> {
         if let Some(reverse_fn) = &self.reverse_fn {
             (reverse_fn)(subject)
@@ -222,6 +255,10 @@ impl TranslatorBuilder {
     }
 
     /// Add a simple mapping rule
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if pattern creation fails
     pub fn map(
         mut self,
         source_pattern: &str,
@@ -249,6 +286,10 @@ impl TranslatorBuilder {
     }
 
     /// Add a context translation rule
+    ///
+    /// # Errors
+    ///
+    /// Returns `SubjectError` if pattern creation fails
     pub fn translate_context(
         mut self,
         from_context: &str,
@@ -330,7 +371,7 @@ pub struct NatsMessage {
 
 impl NatsMessage {
     /// Create a new NATS message with correlation headers
-    pub fn with_correlation(
+    #[must_use] pub fn with_correlation(
         subject: String,
         payload: serde_json::Value,
         identity: &MessageIdentity,

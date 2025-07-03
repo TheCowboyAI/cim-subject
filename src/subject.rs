@@ -17,9 +17,19 @@ pub struct Subject {
 impl Subject {
     /// Create a new subject from a string
     ///
+    /// # Arguments
+    ///
+    /// * `subject` - The subject string to parse
+    ///
     /// # Errors
     ///
-    /// Returns an error if the subject format is invalid
+    /// Returns `SubjectError` if:
+    /// - The subject is empty
+    /// - The subject contains invalid characters
+    /// - The subject doesn't have at least 3 parts (context, aggregate, event)
+    /// - The subject contains empty parts
+    ///
+    /// # Examples
     pub fn new(subject: impl Into<String>) -> Result<Self> {
         let raw = subject.into();
         let parts = SubjectParts::parse(&raw)?;
@@ -68,6 +78,7 @@ impl Subject {
     }
 
     /// Create a new subject with a different event type
+    #[must_use]
     pub fn with_event_type(&self, event_type: impl Into<String>) -> Self {
         let mut parts = self.parts.clone();
         parts.event_type = event_type.into();
@@ -75,6 +86,7 @@ impl Subject {
     }
 
     /// Create a new subject with a different version
+    #[must_use]
     pub fn with_version(&self, version: impl Into<String>) -> Self {
         let mut parts = self.parts.clone();
         parts.version = version.into();
@@ -138,21 +150,15 @@ impl SubjectParts {
         let parts: Vec<&str> = subject.split('.').collect();
 
         if parts.len() != 4 {
-            return Err(SubjectError::invalid_format(format!(
-                "Subject must have exactly 4 parts separated by dots, got {}: '{}'",
-                parts.len(),
-                subject
+            return Err(SubjectError::invalid_format(format!("Subject must have exactly 4 parts separated by dots, got {}: '{}'", 
+                parts.len(), subject
             )));
         }
 
         // Validate each part
         for (i, part) in parts.iter().enumerate() {
             if part.is_empty() {
-                return Err(SubjectError::invalid_format(format!(
-                    "Subject part {} cannot be empty in '{}'",
-                    i + 1,
-                    subject
-                )));
+                return Err(SubjectError::invalid_format(format!("Subject part {} cannot be empty in '{}'", i + 1, subject)));
             }
             if !part.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
                 return Err(SubjectError::invalid_format(format!(
@@ -171,10 +177,7 @@ impl SubjectParts {
 
     /// Convert back to a subject string
     #[must_use] pub fn to_subject(&self) -> String {
-        format!(
-            "{}.{}.{}.{}",
-            self.context, self.aggregate, self.event_type, self.version
-        )
+        format!("{}.{}.{}.{}", self.context, self.aggregate, self.event_type, self.version)
     }
 }
 
@@ -208,24 +211,28 @@ impl SubjectBuilder {
     }
 
     /// Set the context
+    #[must_use]
     pub fn context(mut self, context: impl Into<String>) -> Self {
         self.context = Some(context.into());
         self
     }
 
     /// Set the aggregate
+    #[must_use]
     pub fn aggregate(mut self, aggregate: impl Into<String>) -> Self {
         self.aggregate = Some(aggregate.into());
         self
     }
 
     /// Set the event type
+    #[must_use]
     pub fn event_type(mut self, event_type: impl Into<String>) -> Self {
         self.event_type = Some(event_type.into());
         self
     }
 
     /// Set the version
+    #[must_use]
     pub fn version(mut self, version: impl Into<String>) -> Self {
         self.version = Some(version.into());
         self

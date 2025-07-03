@@ -7,6 +7,12 @@ use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
+/// Type alias for composition functions
+pub type ComposerFn = Arc<dyn Fn(&Subject, &Subject) -> Result<Subject> + Send + Sync>;
+
+/// Type alias for transformation functions
+pub type TransformFn = Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>;
+
 /// The Subject Algebra system for compositional operations
 #[derive(Clone)]
 pub struct SubjectAlgebra {
@@ -42,6 +48,13 @@ impl SubjectAlgebra {
     }
 
     /// Compose two subjects using a specific operation
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - A named transformation is not found
+    /// - A transformation pattern doesn't match the input subject
+    /// - A composition rule fails during execution
     pub fn compose(
         &self,
         left: &Subject,
@@ -60,7 +73,13 @@ impl SubjectAlgebra {
 
     /// Sequential composition: left happens before right
     fn sequence(&self, left: &Subject, right: &Subject) -> Result<Subject> {
-        // Create a new subject representing the sequence
+        // Check if there's a registered rule for this sequence
+        let rule_key = format!("sequence:{}:{}", left.event_type(), right.event_type());
+        if let Some(rule) = self.rules.get(&rule_key) {
+            return (rule.composer)(left, right);
+        }
+
+        // Default sequence behavior
         let parts = SubjectParts::new(
             format!("{}-{}", left.context(), right.context()),
             format!("{}-{}", left.aggregate(), right.aggregate()),
@@ -72,6 +91,13 @@ impl SubjectAlgebra {
 
     /// Parallel composition: left and right happen concurrently
     fn parallel(&self, left: &Subject, right: &Subject) -> Result<Subject> {
+        // Check if there's a registered rule for this parallel composition
+        let rule_key = format!("parallel:{}:{}", left.event_type(), right.event_type());
+        if let Some(rule) = self.rules.get(&rule_key) {
+            return (rule.composer)(left, right);
+        }
+
+        // Default parallel behavior
         let parts = SubjectParts::new(
             format!("{}+{}", left.context(), right.context()),
             format!("{}+{}", left.aggregate(), right.aggregate()),
@@ -83,6 +109,13 @@ impl SubjectAlgebra {
 
     /// Choice composition: choose left or right based on condition
     fn choice(&self, left: &Subject, right: &Subject, condition: &str) -> Result<Subject> {
+        // Check if there's a registered rule for this choice
+        let rule_key = format!("choice:{}:{}:{}", left.event_type(), right.event_type(), condition);
+        if let Some(rule) = self.rules.get(&rule_key) {
+            return (rule.composer)(left, right);
+        }
+
+        // Default choice behavior
         let parts = SubjectParts::new(
             left.context(), // Use left's context as primary
             format!("{}|{}", left.aggregate(), right.aggregate()),
@@ -104,7 +137,14 @@ impl SubjectAlgebra {
 
     /// Project specific fields from a subject
     fn project(&self, subject: &Subject, fields: &[String]) -> Result<Subject> {
-        // For now, we'll create a projected version
+        // Check if there's a registered rule for projection
+        let rule_key = format!("project:{}:{}", subject.event_type(), fields.join(","));
+        if let Some(rule) = self.rules.get(&rule_key) {
+            // For projection, we pass the subject twice (the rule can ignore the second)
+            return (rule.composer)(subject, subject);
+        }
+
+        // Default projection behavior
         let parts = SubjectParts::new(
             subject.context(),
             subject.aggregate(),
@@ -116,6 +156,14 @@ impl SubjectAlgebra {
 
     /// Inject a subject into a different context
     fn inject(&self, subject: &Subject, new_context: &str) -> Result<Subject> {
+        // Check if there's a registered rule for context injection
+        let rule_key = format!("inject:{}:{}", subject.context(), new_context);
+        if let Some(rule) = self.rules.get(&rule_key) {
+            // For injection, we pass the subject twice (the rule can ignore the second)
+            return (rule.composer)(subject, subject);
+        }
+
+        // Default injection behavior
         let parts = SubjectParts::new(
             new_context,
             subject.aggregate(),
@@ -179,7 +227,7 @@ pub struct CompositionRule {
     /// Pattern for right operand
     pub right_pattern: Pattern,
     /// Function to compose subjects
-    pub composer: Arc<dyn Fn(&Subject, &Subject) -> Result<Subject> + Send + Sync>,
+    pub composer: ComposerFn,
 }
 
 /// A transformation on subjects
@@ -190,18 +238,20 @@ pub struct Transformation {
     /// Input pattern
     pub input_pattern: Pattern,
     /// Transformation function
-    pub transform: Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>,
+    pub transform: TransformFn,
 }
 
 impl Transformation {
     /// Apply the transformation to a subject
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The subject doesn't match the transformation's input pattern
+    /// - The transformation function itself returns an error
     pub fn apply(&self, subject: &Subject) -> Result<Subject> {
         if !self.input_pattern.matches(subject) {
-            return Err(SubjectError::validation_error(format!(
-                "Subject '{}' does not match transformation pattern '{}'",
-                subject,
-                self.input_pattern
-            )));
+            return Err(SubjectError::validation_error(format!("Subject '{subject}' does not match transformation pattern '{}'", self.input_pattern)));
         }
         (self.transform)(subject)
     }

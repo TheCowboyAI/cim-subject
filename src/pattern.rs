@@ -54,11 +54,7 @@ impl Pattern {
         for (i, part) in parts.iter().enumerate() {
             match *part {
                 "" => {
-                    return Err(SubjectError::invalid_pattern(format!(
-                        "Empty token at position {} in pattern '{}'",
-                        i + 1,
-                        pattern
-                    )));
+                    return Err(SubjectError::invalid_pattern(format!("Empty token at position {} in pattern '{}'", i + 1, pattern)));
                 }
                 "*" => tokens.push(Token::SingleWildcard),
                 ">" => {
@@ -175,10 +171,9 @@ impl Pattern {
             .position(|t| matches!(t, Token::SingleWildcard | Token::MultiWildcard));
 
         match (self_first_wildcard, other_first_wildcard) {
-            (None, None) => false, // Both are literal, equally specific
             (None, Some(_)) => true, // Self is all literal, more specific
-            (Some(_), None) => false, // Other is all literal, less specific
             (Some(a), Some(b)) => a > b, // Wildcard appears later in self
+            _ => false, // All other cases: equally specific or other is more specific
         }
     }
 }

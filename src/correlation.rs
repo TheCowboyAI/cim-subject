@@ -22,7 +22,7 @@
 //! 3. **All Messages**: Every message in the system MUST have:
 //!    - A unique `MessageId`
 //!    - A `CorrelationId` (either self or inherited)
-//!    - A `CausationId` (either self or parent's MessageId)
+//!    - A `CausationId` (either self or parent's `MessageId`)
 
 use std::fmt::{self, Display};
 use serde::{Deserialize, Serialize};
@@ -115,16 +115,19 @@ pub struct CorrelationId(pub IdType);
 
 impl CorrelationId {
     /// Create a new correlation ID from a UUID
+    #[must_use]
     pub fn from_uuid(uuid: Uuid) -> Self {
         Self(IdType::Uuid(uuid))
     }
     
     /// Create a correlation ID from a CID
+    #[must_use]
     pub fn from_cid(cid: Cid) -> Self {
         Self(IdType::Cid(SerializableCid(cid)))
     }
     
     /// Get the inner ID type
+    #[must_use]
     pub fn inner(&self) -> &IdType {
         &self.0
     }
@@ -145,16 +148,19 @@ pub struct CausationId(pub IdType);
 
 impl CausationId {
     /// Create a new causation ID from a UUID
+    #[must_use]
     pub fn from_uuid(uuid: Uuid) -> Self {
         Self(IdType::Uuid(uuid))
     }
     
     /// Create a causation ID from a CID
+    #[must_use]
     pub fn from_cid(cid: Cid) -> Self {
         Self(IdType::Cid(SerializableCid(cid)))
     }
     
     /// Get the inner ID type
+    #[must_use]
     pub fn inner(&self) -> &IdType {
         &self.0
     }
@@ -186,7 +192,8 @@ impl MessageIdentity {
     /// Create a root message identity (self-correlated)
     ///
     /// Used for messages that originate from user actions or external triggers.
-    /// For root messages: MessageId = CorrelationId = CausationId
+    /// For root messages: `MessageId` = `CorrelationId` = `CausationId`
+    #[must_use]
     pub fn root(message_id: IdType) -> Self {
         Self {
             correlation_id: match &message_id {
@@ -205,6 +212,7 @@ impl MessageIdentity {
     ///
     /// Used for messages that are caused by other messages.
     /// Inherits correlation from parent, sets causation to parent's ID.
+    #[must_use]
     pub fn caused_by(
         message_id: IdType,
         parent_correlation: CorrelationId,
@@ -221,6 +229,7 @@ impl MessageIdentity {
     }
     
     /// Check if this is a root message (self-correlated)
+    #[must_use]
     pub fn is_root(&self) -> bool {
         match (&self.message_id, &self.correlation_id.0, &self.causation_id.0) {
             (IdType::Uuid(msg), IdType::Uuid(corr), IdType::Uuid(caus)) => {
@@ -234,6 +243,7 @@ impl MessageIdentity {
     }
     
     /// Convert to NATS headers
+    #[must_use]
     pub fn to_nats_headers(&self) -> Vec<(&'static str, String)> {
         vec![
             ("X-Message-ID", self.message_id.to_string()),
@@ -251,21 +261,25 @@ pub struct MessageFactory;
 
 impl MessageFactory {
     /// Create a root command (starts new correlation chain)
+    #[must_use]
     pub fn create_root_command(command_id: Uuid) -> MessageIdentity {
         MessageIdentity::root(IdType::Uuid(command_id))
     }
     
     /// Create a root query (starts new correlation chain)
+    #[must_use]
     pub fn create_root_query(query_id: Uuid) -> MessageIdentity {
         MessageIdentity::root(IdType::Uuid(query_id))
     }
     
     /// Create a root event (starts new correlation chain)
+    #[must_use]
     pub fn create_root_event(event_cid: Cid) -> MessageIdentity {
         MessageIdentity::root(IdType::Cid(SerializableCid(event_cid)))
     }
     
     /// Create a command caused by another command
+    #[must_use]
     pub fn command_from_command(
         command_id: Uuid,
         parent_identity: &MessageIdentity,
@@ -278,6 +292,7 @@ impl MessageFactory {
     }
     
     /// Create a command caused by a query
+    #[must_use]
     pub fn command_from_query(
         command_id: Uuid,
         parent_identity: &MessageIdentity,
@@ -290,6 +305,7 @@ impl MessageFactory {
     }
     
     /// Create a command caused by an event
+    #[must_use]
     pub fn command_from_event(
         command_id: Uuid,
         parent_identity: &MessageIdentity,
@@ -302,6 +318,7 @@ impl MessageFactory {
     }
     
     /// Create a query caused by a command
+    #[must_use]
     pub fn query_from_command(
         query_id: Uuid,
         parent_identity: &MessageIdentity,
@@ -314,6 +331,7 @@ impl MessageFactory {
     }
     
     /// Create a query caused by another query
+    #[must_use]
     pub fn query_from_query(
         query_id: Uuid,
         parent_identity: &MessageIdentity,
@@ -326,6 +344,7 @@ impl MessageFactory {
     }
     
     /// Create a query caused by an event
+    #[must_use]
     pub fn query_from_event(
         query_id: Uuid,
         parent_identity: &MessageIdentity,
@@ -338,6 +357,7 @@ impl MessageFactory {
     }
     
     /// Create an event caused by a command
+    #[must_use]
     pub fn event_from_command(
         event_cid: Cid,
         parent_identity: &MessageIdentity,
@@ -350,6 +370,7 @@ impl MessageFactory {
     }
     
     /// Create an event caused by a query
+    #[must_use]
     pub fn event_from_query(
         event_cid: Cid,
         parent_identity: &MessageIdentity,
@@ -362,6 +383,7 @@ impl MessageFactory {
     }
     
     /// Create an event caused by another event
+    #[must_use]
     pub fn event_from_event(
         event_cid: Cid,
         parent_identity: &MessageIdentity,
@@ -390,6 +412,11 @@ impl Default for CorrelationValidator {
 
 impl CorrelationValidator {
     /// Validate a message identity
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - A non-root message has self-causation (message ID equals causation ID)
     pub fn validate(&self, identity: &MessageIdentity) -> Result<()> {
         // Root messages must have self-correlation
         if identity.is_root() {
@@ -415,6 +442,12 @@ impl CorrelationValidator {
     }
     
     /// Check for cycles in a causation chain
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The chain exceeds the maximum allowed depth
+    /// - A cycle is detected (same message ID appears twice)
     pub fn check_cycles(&self, chain: &[MessageIdentity]) -> Result<()> {
         if chain.len() > self.max_chain_depth {
             return Err(CorrelationError::CyclicCausation);

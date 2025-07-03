@@ -172,6 +172,7 @@ impl PermissionRule {
     }
 
     /// Add a description
+    #[must_use]
     pub fn with_description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -236,6 +237,10 @@ impl PermissionsBuilder {
     }
 
     /// Allow a pattern for specific operations
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pattern is invalid
     pub fn allow(mut self, pattern: &str, operations: &[Operation]) -> Result<Self> {
         let pattern = Pattern::new(pattern)?;
         let ops: HashSet<_> = operations.iter().copied().collect();
@@ -244,6 +249,10 @@ impl PermissionsBuilder {
     }
 
     /// Deny a pattern for specific operations
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pattern is invalid
     pub fn deny(mut self, pattern: &str, operations: &[Operation]) -> Result<Self> {
         let pattern = Pattern::new(pattern)?;
         let ops: HashSet<_> = operations.iter().copied().collect();
@@ -252,11 +261,19 @@ impl PermissionsBuilder {
     }
 
     /// Allow all operations on a pattern
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pattern is invalid
     pub fn allow_all(self, pattern: &str) -> Result<Self> {
         self.allow(pattern, &[Operation::Publish, Operation::Subscribe, Operation::Request])
     }
 
     /// Deny all operations on a pattern
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pattern is invalid
     pub fn deny_all(self, pattern: &str) -> Result<Self> {
         self.deny(pattern, &[Operation::Publish, Operation::Subscribe, Operation::Request])
     }
