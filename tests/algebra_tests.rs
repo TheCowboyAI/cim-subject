@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Algebra Tests for CIM Subject
 //!
 //! Tests for the algebraic structures and operations on subjects

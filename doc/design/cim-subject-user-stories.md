@@ -1,3 +1,5 @@
+<!-- Copyright 2025 Cowboy AI, LLC. -->
+
 # CIM Subject Module - Private Mortgage Lending User Stories
 
 ## Overview

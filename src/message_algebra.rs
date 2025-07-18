@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! # Message Algebra for Correlation Chains
 //!
 //! This module implements algebraic operations on message correlation chains,

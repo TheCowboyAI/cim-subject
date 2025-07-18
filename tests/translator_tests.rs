@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Translator Tests for CIM Subject
 //!
 //! Tests for bidirectional subject translation between different schemas

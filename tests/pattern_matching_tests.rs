@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Pattern Matching Tests for CIM Subject
 //!
 //! Tests for NATS-style wildcard pattern matching

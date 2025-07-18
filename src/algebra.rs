@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Subject Algebra - compositional operations on subjects
 
 use crate::error::{Result, SubjectError};

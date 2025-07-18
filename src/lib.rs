@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! # CIM Subject Algebra
 //!
 //! This crate provides a comprehensive Subject Algebra system for NATS-based

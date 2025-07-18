@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Error types for subject operations
 
 use thiserror::Error;

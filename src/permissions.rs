@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Subject-based permissions and access control
 
 use crate::error::Result;

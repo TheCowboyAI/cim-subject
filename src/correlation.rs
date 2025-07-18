@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! # Correlation and Causation Algebra for Message Tracking
 //!
 //! This module implements the correlation/causation algebra for tracking message

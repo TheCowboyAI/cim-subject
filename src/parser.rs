@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Subject parser with custom parsing rules
 
 use crate::error::{Result, SubjectError};
@@ -300,7 +302,7 @@ mod tests {
                         Ok(SubjectParts::new(
                             "workflow",
                             parts[1], // workflow ID as aggregate
-                            format!("{parts[2]}_{parts[3]}"), // step_status as event
+                            format!("{}_{}", parts[2], parts[3]), // step_status as event
                             "v1",
                         ))
                     }),

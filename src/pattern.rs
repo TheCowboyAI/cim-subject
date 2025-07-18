@@ -1,3 +1,5 @@
+// Copyright 2025 Cowboy AI, LLC.
+
 //! Pattern matching for subjects with wildcard support
 
 use crate::error::{Result, SubjectError};
