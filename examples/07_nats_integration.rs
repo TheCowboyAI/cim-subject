@@ -50,7 +50,7 @@ mod mock_nats {
             headers: HeaderMap,
             _payload: Vec<u8>,
         ) -> Result<(), Box<dyn std::error::Error>> {
-            println!("  NATS PUB {} with headers {:?}", subject, headers);
+            println!("  NATS PUB {subject} with headers {headers:?}");
             Ok(())
         }
 
@@ -58,7 +58,7 @@ mod mock_nats {
             &self,
             subject: String,
         ) -> Result<Subscription, Box<dyn std::error::Error>> {
-            println!("  NATS SUB {}", subject);
+            println!("  NATS SUB {subject}");
             Ok(Subscription { subject })
         }
     }
@@ -287,7 +287,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             ];
 
             for (step_name, subject_str) in steps {
-                println!("  Step: {}", step_name);
+                println!("  Step: {step_name}");
 
                 let subject = Subject::new(subject_str)?;
                 let step_identity = MessageIdentity::caused_by(
@@ -406,7 +406,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let reply_inbox = format!("_INBOX.{}", Uuid::new_v4());
 
     println!("  Request: {}", query_subject.as_str());
-    println!("  Reply-To: {}", reply_inbox);
+    println!("  Reply-To: {reply_inbox}");
 
     // In real NATS, you'd subscribe to reply_inbox before sending
     // Then include reply_inbox in the request headers
@@ -488,7 +488,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         for subject_str in &test_subjects {
             let subject = Subject::new(*subject_str)?;
             if pattern.matches(&subject) {
-                println!("    ✓ {}", subject_str);
+                println!("    ✓ {subject_str}");
             }
         }
     }

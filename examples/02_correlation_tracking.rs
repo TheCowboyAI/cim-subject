@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("1. Customer places order:");
-    println!("   Message ID: {}", order_id);
+    println!("   Message ID: {order_id}");
     println!(
         "   Correlation ID: {}",
         order_placed.identity.correlation_id.0
@@ -64,13 +64,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("2. Order service creates order:");
-    println!("   Message ID: {}", order_created_id);
+    println!("   Message ID: {order_created_id}");
     println!(
         "   Correlation ID: {}",
         order_created.identity.correlation_id.0
     );
     println!("   Causation ID: {}", order_created.identity.causation_id.0);
-    println!("   Caused by: OrderPlaced ({})\n", order_id);
+    println!("   Caused by: OrderPlaced ({order_id})\n");
 
     message_flows.insert(order_created_id, order_created.clone());
 
@@ -87,7 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("3. Inventory service reserves stock:");
-    println!("   Message ID: {}", stock_reserved_id);
+    println!("   Message ID: {stock_reserved_id}");
     println!(
         "   Correlation ID: {}",
         stock_reserved.identity.correlation_id.0
@@ -96,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "   Causation ID: {}",
         stock_reserved.identity.causation_id.0
     );
-    println!("   Caused by: OrderCreated ({})\n", order_created_id);
+    println!("   Caused by: OrderCreated ({order_created_id})\n");
 
     message_flows.insert(stock_reserved_id, stock_reserved.clone());
 
@@ -113,7 +113,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("4. Payment service processes payment:");
-    println!("   Message ID: {}", payment_processed_id);
+    println!("   Message ID: {payment_processed_id}");
     println!(
         "   Correlation ID: {}",
         payment_processed.identity.correlation_id.0
@@ -122,7 +122,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "   Causation ID: {}",
         payment_processed.identity.causation_id.0
     );
-    println!("   Caused by: OrderCreated ({})\n", order_created_id);
+    println!("   Caused by: OrderCreated ({order_created_id})\n");
 
     message_flows.insert(payment_processed_id, payment_processed.clone());
 
@@ -139,7 +139,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("5. Notification service sends confirmation:");
-    println!("   Message ID: {}", notification_sent_id);
+    println!("   Message ID: {notification_sent_id}");
     println!(
         "   Correlation ID: {}",
         notification_sent.identity.correlation_id.0
@@ -149,8 +149,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         notification_sent.identity.causation_id.0
     );
     println!(
-        "   Caused by: PaymentProcessed ({})\n",
-        payment_processed_id
+        "   Caused by: PaymentProcessed ({payment_processed_id})\n"
     );
 
     message_flows.insert(notification_sent_id, notification_sent);
@@ -196,12 +195,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Demonstrate NATS header mapping
     println!("\n=== NATS Header Mapping ===\n");
     println!("When publishing via NATS, set these headers:");
-    println!("  X-Message-ID: {}", notification_sent_id);
+    println!("  X-Message-ID: {notification_sent_id}");
     println!(
         "  X-Correlation-ID: {}",
         order_placed.identity.correlation_id.0
     );
-    println!("  X-Causation-ID: {}", payment_processed_id);
+    println!("  X-Causation-ID: {payment_processed_id}");
 
     Ok(())
 }

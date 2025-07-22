@@ -309,16 +309,16 @@ fn test_legacy_system_migration() {
                     if parts.len() >= 4 {
                         let event_name = parts[2];
 
-                        if event_name.starts_with("order_") {
-                            let event_type = &event_name[6..]; // Remove "order_" prefix
+                        if let Some(event_type) = event_name.strip_prefix("order_") {
+                            // Remove "order_" prefix
                             let new_subject = format!("orders.order.{event_type}.v2");
                             Subject::new(new_subject)
-                        } else if event_name.starts_with("inventory_") {
-                            let event_type = &event_name[10..]; // Remove "inventory_" prefix
+                        } else if let Some(event_type) = event_name.strip_prefix("inventory_") {
+                            // Remove "inventory_" prefix
                             let new_subject = format!("inventory.stock.{event_type}.v2");
                             Subject::new(new_subject)
-                        } else if event_name.starts_with("user_") {
-                            let event_type = &event_name[5..]; // Remove "user_" prefix
+                        } else if let Some(event_type) = event_name.strip_prefix("user_") {
+                            // Remove "user_" prefix
                             let new_subject = format!("users.profile.{event_type}.v2");
                             Subject::new(new_subject)
                         } else {

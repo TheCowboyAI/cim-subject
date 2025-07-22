@@ -173,7 +173,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             "✗"
         };
-        println!("  {} {:?}", status, doc_type);
+        println!("  {status} {doc_type:?}");
     }
 
     // Example 4: OCR workflow translation
@@ -199,9 +199,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let validation_rules = create_validation_rules();
 
     for (doc_type, rules) in &validation_rules {
-        println!("\n  {:?}:", doc_type);
+        println!("\n  {doc_type:?}:");
         for (rule_name, subject_pattern) in rules {
-            println!("    - {}: {}", rule_name, subject_pattern);
+            println!("    - {rule_name}: {subject_pattern}");
         }
     }
 
@@ -272,7 +272,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for subject_str in &test_subjects {
             let subject = Subject::new(*subject_str)?;
             if pattern.matches(&subject) {
-                println!("    ✓ {}", subject_str);
+                println!("    ✓ {subject_str}");
             }
         }
     }
@@ -285,7 +285,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !missing.is_empty() {
         println!("  Missing documents for loan LOAN-12345:");
         for doc_type in &missing {
-            println!("    - {:?}", doc_type);
+            println!("    - {doc_type:?}");
         }
     }
 
@@ -303,7 +303,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ]);
 
     for (state, required) in state_requirements {
-        println!("\n  State: {}", state);
+        println!("\n  State: {state}");
         for doc_type in required {
             let subject = SubjectBuilder::new()
                 .context("lending")
@@ -481,6 +481,6 @@ fn create_validation_rules() -> HashMap<DocumentType, Vec<(&'static str, &'stati
 
 fn identify_missing_documents(loan_id: &str) -> Vec<DocumentType> {
     // In a real implementation, this would query the database
-    println!("    Checking database for loan: {}", loan_id);
+    println!("    Checking database for loan: {loan_id}");
     vec![DocumentType::W2, DocumentType::TitleReport]
 }

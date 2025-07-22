@@ -121,8 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let multi_submit_pattern = Pattern::new("lending.*.*.*.submissions.property.submit")?;
 
     println!(
-        "  Detecting multiple submissions for property {}:",
-        property_id
+        "  Detecting multiple submissions for property {property_id}:"
     );
     for (broker_id, subject_str) in submissions {
         let subject = Subject::new(subject_str)?;
@@ -143,7 +142,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ]);
 
     for (region, rules) in regional_rules {
-        println!("  Region: {}", region);
+        println!("  Region: {region}");
         for rule in rules {
             let subject = Subject::new(rule)?;
             println!("    → {}", subject.as_str());
@@ -186,7 +185,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for amount in test_amounts {
         for (threshold, priority, queue) in &priority_rules {
             if amount >= *threshold {
-                println!("  ${:.2} → {} priority → {}", amount, priority, queue);
+                println!("  ${amount:.2} → {priority} priority → {queue}");
                 break;
             }
         }
@@ -212,7 +211,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ]);
 
     for (prop_type, route) in avm_routes {
-        println!("  {:?} → {}", prop_type, route);
+        println!("  {prop_type:?} → {route}");
     }
 
     // Example 7: Lender tier matching
@@ -240,7 +239,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (lender_group, pattern, allowed_tiers) in lender_patterns {
         println!("\n  {} ({})", lender_group, pattern.as_str());
         for tier in allowed_tiers {
-            println!("    ✓ {:?} brokers allowed", tier);
+            println!("    ✓ {tier:?} brokers allowed");
         }
     }
 
@@ -338,7 +337,7 @@ fn route_application(
         BrokerTier::Bronze => "enhanced-validation",
     };
 
-    println!("  → Workflow: {}", workflow);
+    println!("  → Workflow: {workflow}");
 
     Ok(())
 }

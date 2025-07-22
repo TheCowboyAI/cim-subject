@@ -71,10 +71,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         condition: "payment_method == 'credit'".to_string(),
     })?;
     println!(
-        "  {} ⊕ {} (when {}) = {}",
+        "  {} ⊕ {} (when payment_method == 'credit') = {}",
         credit_payment.as_str(),
         debit_payment.as_str(),
-        "payment_method == 'credit'",
         choice.as_str()
     );
 

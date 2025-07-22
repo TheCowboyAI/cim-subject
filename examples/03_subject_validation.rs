@@ -37,10 +37,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         println!("    - Action: {}", parts.event_type);
                         println!("    - Version: {}", parts.version);
                     },
-                    Err(e) => println!("    ✗ Failed to parse: {}", e),
+                    Err(e) => println!("    ✗ Failed to parse: {e}"),
                 }
             },
-            Err(e) => println!("  ✗ {} is invalid: {}", subject_str, e),
+            Err(e) => println!("  ✗ {subject_str} is invalid: {e}"),
         }
         println!();
     }
@@ -59,8 +59,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (subject_str, reason) in invalid_subjects {
         match Subject::new(subject_str) {
-            Ok(_) => println!("  ✗ {} should have failed!", subject_str),
-            Err(e) => println!("  ✓ {} correctly rejected ({}): {}", subject_str, reason, e),
+            Ok(_) => println!("  ✗ {subject_str} should have failed!"),
+            Err(e) => println!("  ✓ {subject_str} correctly rejected ({reason}): {e}"),
         }
     }
 
@@ -112,8 +112,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (result, description) in test_cases {
         match result {
-            Ok(_) => println!("    ✗ Builder should have failed for: {}", description),
-            Err(e) => println!("    ✓ Builder correctly rejected {}: {}", description, e),
+            Ok(_) => println!("    ✗ Builder should have failed for: {description}"),
+            Err(e) => println!("    ✓ Builder correctly rejected {description}: {e}"),
         }
     }
 
@@ -143,8 +143,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if !allowed_aggregates.contains(&parts.aggregate.as_str()) {
                 return Err(SubjectError::invalid_format(format!(
-                    "Orders domain only allows aggregates: {:?}",
-                    allowed_aggregates
+                    "Orders domain only allows aggregates: {allowed_aggregates:?}"
                 )));
             }
         }
@@ -169,8 +168,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for subject_str in test_subjects {
         match validate_domain_subject(subject_str) {
-            Ok(_) => println!("  ✓ {} passes custom validation", subject_str),
-            Err(e) => println!("  ✗ {} fails custom validation: {}", subject_str, e),
+            Ok(_) => println!("  ✓ {subject_str} passes custom validation"),
+            Err(e) => println!("  ✗ {subject_str} fails custom validation: {e}"),
         }
     }
 
@@ -202,7 +201,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "unknown"
             };
 
-            println!("  {} is a valid {} message", subject_str, message_type);
+            println!("  {subject_str} is a valid {message_type} message");
         }
     }
 

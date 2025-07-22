@@ -161,7 +161,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subject = Subject::new("orders.events.order.v1")?;
 
     println!("  Subject: {}", subject.as_str());
-    for (_name, service) in &services {
+    for service in services.values() {
         let can_publish = service.permissions.is_allowed(&subject, Operation::Publish);
         let can_subscribe = service
             .permissions

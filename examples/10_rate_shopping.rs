@@ -112,8 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example 2: Lender qualification routing
     println!("\n2. Lender Qualification Routing:\n");
 
-    let test_loans = vec![
-        LoanProfile {
+    let test_loans = [LoanProfile {
             loan_amount: 2_500_000.0,
             property_value: 3_000_000.0,
             property_type: PropertyType::SingleFamily,
@@ -140,8 +139,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             property_type: PropertyType::SingleFamily,
             fico_score: 650,
             doc_type: DocType::NoDoc,
-        },
-    ];
+        }];
 
     for (i, loan) in test_loans.iter().enumerate() {
         println!(
@@ -254,7 +252,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ];
 
     for (tier, pattern, timeout_seconds) in shopping_strategy {
-        println!("  {} (timeout: {}s)", tier, timeout_seconds);
+        println!("  {tier} (timeout: {timeout_seconds}s)");
         println!("    Pattern: {}", pattern.as_str());
     }
 
@@ -333,7 +331,7 @@ fn setup_lenders() -> Result<Vec<Lender>, Box<dyn std::error::Error>> {
     Ok(lenders)
 }
 
-fn shop_rates(loan: &LoanProfile, lenders: &Vec<Lender>) -> Result<(), Box<dyn std::error::Error>> {
+fn shop_rates(loan: &LoanProfile, lenders: &[Lender]) -> Result<(), Box<dyn std::error::Error>> {
     println!("  Shopping rates for:");
     println!("    Amount: ${:.0}", loan.loan_amount);
     println!(

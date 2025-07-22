@@ -298,5 +298,5 @@ fn test_pattern_matching_performance() {
     }
 
     // This test primarily ensures patterns work correctly at scale
-    assert!(true);
+    // If we get here without panicking, the test passed
 }

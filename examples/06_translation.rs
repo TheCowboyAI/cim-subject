@@ -84,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         _ => "entity",
                     };
 
-                    let new_subject = format!("{}.{}.{}.{}", service, msg_type, entity, action);
+                    let new_subject = format!("{service}.{msg_type}.{entity}.{action}");
                     Subject::new(new_subject)
                 } else {
                     Ok(subject.clone())
@@ -244,7 +244,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let parts = cim_subject::SubjectParts::parse(subject.as_str())?;
 
                 // Validate event types
-                let valid_events = vec!["created", "updated", "deleted", "published"];
+                let valid_events = ["created", "updated", "deleted", "published"];
                 if !valid_events.contains(&parts.event_type.as_str()) {
                     return Err(cim_subject::SubjectError::validation_error(format!(
                         "Invalid event type: {}",
@@ -286,7 +286,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(translated) => println!("  ✓ {} → {}", event.as_str(), translated.as_str()),
                 Err(e) => println!("  ✗ {} failed: {}", event.as_str(), e),
             },
-            Err(e) => println!("  ✗ {} invalid: {}", event_str, e),
+            Err(e) => println!("  ✗ {event_str} invalid: {e}"),
         }
     }
 
