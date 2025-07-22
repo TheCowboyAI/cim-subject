@@ -537,7 +537,7 @@ To update test results:
 - **[MODULE.md](MODULE.md)** - Module architecture and API reference
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute
-- **[USER_STORIES.md](USER_STORIES.md)** - Real-world usage scenarios
+- **[User Stories](doc/design/USER_STORIES.md)** - Real-world usage scenarios
 - **[Examples](examples/)** - Runnable example applications
 - **[API Documentation](https://docs.rs/cim-subject)** - Generated API docs
 
