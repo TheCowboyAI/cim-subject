@@ -2,6 +2,11 @@
 
 # CIM-Subject
 
+[![CI](https://github.com/TheCowboyAI/cim-subject/actions/workflows/ci.yml/badge.svg)](https://github.com/TheCowboyAI/cim-subject/actions/workflows/ci.yml)
+[![Coverage](https://github.com/TheCowboyAI/cim-subject/actions/workflows/coverage.yml/badge.svg)](https://github.com/TheCowboyAI/cim-subject/actions/workflows/coverage.yml)
+[![Release](https://img.shields.io/github/v/release/TheCowboyAI/cim-subject)](https://github.com/TheCowboyAI/cim-subject/releases)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
 A foundational module within the CIM Domain framework that provides subject-based message routing, correlation tracking, and algebraic operations for NATS messaging in distributed domain-driven systems.
 
 ## Overview
@@ -273,6 +278,30 @@ Examples:
 - **Subject Versioning**: Built-in support for API evolution
 - **Performance Optimization**: Caching for frequently used subject patterns
 - **Monitoring Integration**: Metrics and tracing for subject usage patterns
+
+## Test Results
+
+<!-- Include test results from last run -->
+### Summary
+- **Total Tests**: 76
+- **Passed**: 76
+- **Failed**: 0
+
+### Test Suites
+```
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+```
+
+*Last run: 2025-07-22 21:22:24 UTC*
+
+To update test results:
+```bash
+./scripts/test-and-save.sh
+```
 
 ## Documentation
 

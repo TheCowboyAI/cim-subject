@@ -33,6 +33,8 @@ result-*
 # Test artifacts
 *.log
 test-results/
+test-results.json
+test-results.md
 
 # Benchmarks
 /target/criterion/
