@@ -15,11 +15,18 @@
 //!     F --> G[Reverse Translation]
 //! ```
 
-use cim_subject::{
-    Pattern, Subject, SubjectParts,
-    translator::{TranslationRule, Translator, TranslatorBuilder},
-};
 use std::sync::Arc;
+
+use cim_subject::{
+    translator::{
+        TranslationRule,
+        Translator,
+        TranslatorBuilder,
+    },
+    Pattern,
+    Subject,
+    SubjectParts,
+};
 
 // ============================================================================
 // Test: Basic Translation Rules

@@ -15,7 +15,11 @@
 //!     E --> F[Specificity Comparison]
 //! ```
 
-use cim_subject::{Pattern, PatternMatcher, Subject};
+use cim_subject::{
+    Pattern,
+    PatternMatcher,
+    Subject,
+};
 
 // ============================================================================
 // Test: Basic Pattern Matching
@@ -83,7 +87,8 @@ fn test_mixed_wildcard_patterns() {
 
     // Should not match
     assert!(!pattern.matches_str("orders.created.v1")); // Too few tokens before created
-    assert!(!pattern.matches_str("orders.order.updated.v1")); // Wrong event type
+    assert!(!pattern.matches_str("orders.order.updated.v1")); // Wrong event
+                                                              // type
 }
 
 #[test]

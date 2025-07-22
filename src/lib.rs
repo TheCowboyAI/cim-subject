@@ -8,16 +8,23 @@
 //!
 //! ## Core Concepts
 //!
-//! - **Subject**: A hierarchical address for messages (e.g., `context.aggregate.event.version`)
+//! - **Subject**: A hierarchical address for messages (e.g.,
+//!   `context.aggregate.event.version`)
 //! - **Pattern**: Wildcard-based subject matching using `*` and `>` operators
 //! - **Algebra**: Compositional operations on subjects and patterns
 //! - **Translation**: Bidirectional mapping between different subject schemas
-//! - **Correlation**: Message tracking and causation chains for distributed tracing
+//! - **Correlation**: Message tracking and causation chains for distributed
+//!   tracing
 //!
 //! ## Example
 //!
 //! ```rust
-//! use cim_subject::{Subject, Pattern, SubjectAlgebra, AlgebraOperation};
+//! use cim_subject::{
+//!     AlgebraOperation,
+//!     Pattern,
+//!     Subject,
+//!     SubjectAlgebra,
+//! };
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Create a subject
@@ -51,30 +58,79 @@ pub mod subject;
 pub mod translator;
 
 // Re-export main types
-pub use algebra::{SubjectAlgebra, AlgebraOperation, CompositionRule};
-pub use correlation::{
-    CorrelationId, CausationId, IdType, MessageIdentity, MessageFactory,
-    CorrelationValidator, CorrelationError, SerializableCid,
+pub use algebra::{
+    AlgebraOperation,
+    CompositionRule,
+    SubjectAlgebra,
 };
-pub use error::{SubjectError, Result};
-pub use message_algebra::{CorrelationChain, MessageAlgebra};
-pub use parser::{SubjectParser, ParseRule};
-pub use pattern::{Pattern, PatternMatcher};
-pub use permissions::{Permissions, PermissionRule};
-pub use subject::{Subject, SubjectParts, SubjectBuilder};
-pub use translator::{Translator, TranslationRule, MessageTranslator, NatsMessage};
+pub use correlation::{
+    CausationId,
+    CorrelationError,
+    CorrelationId,
+    CorrelationValidator,
+    IdType,
+    MessageFactory,
+    MessageIdentity,
+    SerializableCid,
+};
+pub use error::{
+    Result,
+    SubjectError,
+};
+pub use message_algebra::{
+    CorrelationChain,
+    MessageAlgebra,
+};
+pub use parser::{
+    ParseRule,
+    SubjectParser,
+};
+pub use pattern::{
+    Pattern,
+    PatternMatcher,
+};
+pub use permissions::{
+    PermissionRule,
+    Permissions,
+};
+pub use subject::{
+    Subject,
+    SubjectBuilder,
+    SubjectParts,
+};
+pub use translator::{
+    MessageTranslator,
+    NatsMessage,
+    TranslationRule,
+    Translator,
+};
 
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::{
-        Subject, SubjectParts, SubjectBuilder,
-        Pattern, PatternMatcher,
-        SubjectAlgebra, AlgebraOperation,
-        Permissions, PermissionRule,
-        Translator, TranslationRule, NatsMessage,
-        CorrelationId, CausationId, IdType, MessageIdentity, MessageFactory,
-        CorrelationValidator, CorrelationError, SerializableCid,
-        CorrelationChain, MessageAlgebra,
-        SubjectError, Result,
+        AlgebraOperation,
+        CausationId,
+        CorrelationChain,
+        CorrelationError,
+        CorrelationId,
+        CorrelationValidator,
+        IdType,
+        MessageAlgebra,
+        MessageFactory,
+        MessageIdentity,
+        NatsMessage,
+        Pattern,
+        PatternMatcher,
+        PermissionRule,
+        Permissions,
+        Result,
+        SerializableCid,
+        Subject,
+        SubjectAlgebra,
+        SubjectBuilder,
+        SubjectError,
+        SubjectParts,
+        TranslationRule,
+        Translator,
     };
 }

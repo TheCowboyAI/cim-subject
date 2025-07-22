@@ -15,11 +15,16 @@
 //!     F --> G[Complex Compositions]
 //! ```
 
+use std::sync::Arc;
+
 use cim_subject::{
-    AlgebraOperation, CompositionRule, Pattern, Subject, SubjectAlgebra,
+    AlgebraOperation,
+    CompositionRule,
+    Pattern,
+    Subject,
+    SubjectAlgebra,
     SubjectParts,
 };
-use std::sync::Arc;
 
 // ============================================================================
 // Test: Basic Algebraic Operations
@@ -121,23 +126,15 @@ fn test_choice_composition() {
 
     // Create choices
     let traditional = algebra
-        .compose(
-            &credit,
-            &debit,
-            AlgebraOperation::Choice {
-                condition: "card_type".to_string(),
-            },
-        )
+        .compose(&credit, &debit, AlgebraOperation::Choice {
+            condition: "card_type".to_string(),
+        })
         .unwrap();
 
     let all_payment = algebra
-        .compose(
-            &traditional,
-            &crypto,
-            AlgebraOperation::Choice {
-                condition: "payment_method".to_string(),
-            },
-        )
+        .compose(&traditional, &crypto, AlgebraOperation::Choice {
+            condition: "payment_method".to_string(),
+        })
         .unwrap();
 
     // Verify choice composition
@@ -187,13 +184,9 @@ fn test_subject_transformations() {
     // Test anonymization
     let user = Subject::new("users.person.created.v1").unwrap();
     let anon = algebra
-        .compose(
-            &user,
-            &user,
-            AlgebraOperation::Transform {
-                name: "anonymize".to_string(),
-            },
-        )
+        .compose(&user, &user, AlgebraOperation::Transform {
+            name: "anonymize".to_string(),
+        })
         .unwrap();
 
     assert_eq!(anon.aggregate(), "anonymous");
@@ -202,13 +195,9 @@ fn test_subject_transformations() {
 
     // Test version upgrade
     let upgraded = algebra
-        .compose(
-            &user,
-            &user,
-            AlgebraOperation::Transform {
-                name: "upgrade_version".to_string(),
-            },
-        )
+        .compose(&user, &user, AlgebraOperation::Transform {
+            name: "upgrade_version".to_string(),
+        })
         .unwrap();
 
     assert_eq!(upgraded.version(), "v2");
@@ -227,13 +216,9 @@ fn test_projection() {
 
     // Project specific fields
     let projected = algebra
-        .compose(
-            &full_event,
-            &full_event,
-            AlgebraOperation::Project {
-                fields: vec!["order_id".to_string(), "total".to_string()],
-            },
-        )
+        .compose(&full_event, &full_event, AlgebraOperation::Project {
+            fields: vec!["order_id".to_string(), "total".to_string()],
+        })
         .unwrap();
 
     assert_eq!(projected.context(), "orders");
@@ -256,13 +241,9 @@ fn test_context_injection() {
 
     // Inject into public context
     let public = algebra
-        .compose(
-            &internal,
-            &internal,
-            AlgebraOperation::Inject {
-                context: "public".to_string(),
-            },
-        )
+        .compose(&internal, &internal, AlgebraOperation::Inject {
+            context: "public".to_string(),
+        })
         .unwrap();
 
     assert_eq!(public.context(), "public");
@@ -272,13 +253,9 @@ fn test_context_injection() {
 
     // Inject into partner context
     let partner = algebra
-        .compose(
-            &internal,
-            &internal,
-            AlgebraOperation::Inject {
-                context: "partner_api".to_string(),
-            },
-        )
+        .compose(&internal, &internal, AlgebraOperation::Inject {
+            context: "partner_api".to_string(),
+        })
         .unwrap();
 
     assert_eq!(partner.context(), "partner_api");
@@ -392,11 +369,9 @@ fn test_algebraic_properties() {
 
     // Project with empty fields acts somewhat like identity
     let identity = algebra
-        .compose(
-            &subject,
-            &subject,
-            AlgebraOperation::Project { fields: vec![] },
-        )
+        .compose(&subject, &subject, AlgebraOperation::Project {
+            fields: vec![],
+        })
         .unwrap();
 
     assert_eq!(identity.context(), subject.context());
@@ -430,13 +405,9 @@ fn test_algebra_error_handling() {
 
     // Test transformation not found
     let subject = Subject::new("test.entity.created.v1").unwrap();
-    let result = algebra.compose(
-        &subject,
-        &subject,
-        AlgebraOperation::Transform {
-            name: "nonexistent".to_string(),
-        },
-    );
+    let result = algebra.compose(&subject, &subject, AlgebraOperation::Transform {
+        name: "nonexistent".to_string(),
+    });
 
     assert!(result.is_err());
 
@@ -450,13 +421,9 @@ fn test_algebra_error_handling() {
     algebra.register_transformation("restricted", transform);
 
     let user_subject = Subject::new("user.profile.updated.v1").unwrap();
-    let result = algebra.compose(
-        &user_subject,
-        &user_subject,
-        AlgebraOperation::Transform {
-            name: "restricted".to_string(),
-        },
-    );
+    let result = algebra.compose(&user_subject, &user_subject, AlgebraOperation::Transform {
+        name: "restricted".to_string(),
+    });
 
     // Should fail because pattern doesn't match
     assert!(result.is_err());

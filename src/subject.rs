@@ -2,10 +2,21 @@
 
 //! Core subject types and operations
 
-use crate::error::{Result, SubjectError};
-use serde::{Deserialize, Serialize};
-use std::fmt::{self, Display};
+use std::fmt::{
+    self,
+    Display,
+};
 use std::str::FromStr;
+
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+use crate::error::{
+    Result,
+    SubjectError,
+};
 
 /// A NATS subject representing a hierarchical address
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -39,43 +50,51 @@ impl Subject {
     }
 
     /// Create a subject from pre-parsed parts
-    #[must_use] pub fn from_parts(parts: SubjectParts) -> Self {
+    #[must_use]
+    pub fn from_parts(parts: SubjectParts) -> Self {
         let raw = parts.to_string();
         Self { raw, parts }
     }
 
     /// Get the raw subject string
-    #[must_use] pub fn as_str(&self) -> &str {
+    #[must_use]
+    pub fn as_str(&self) -> &str {
         &self.raw
     }
 
     /// Get the parsed parts
-    #[must_use] pub fn parts(&self) -> &SubjectParts {
+    #[must_use]
+    pub fn parts(&self) -> &SubjectParts {
         &self.parts
     }
 
     /// Decompose into parts
-    #[must_use] pub fn into_parts(self) -> SubjectParts {
+    #[must_use]
+    pub fn into_parts(self) -> SubjectParts {
         self.parts
     }
 
     /// Get the context component
-    #[must_use] pub fn context(&self) -> &str {
+    #[must_use]
+    pub fn context(&self) -> &str {
         &self.parts.context
     }
 
     /// Get the aggregate component
-    #[must_use] pub fn aggregate(&self) -> &str {
+    #[must_use]
+    pub fn aggregate(&self) -> &str {
         &self.parts.aggregate
     }
 
     /// Get the event type component
-    #[must_use] pub fn event_type(&self) -> &str {
+    #[must_use]
+    pub fn event_type(&self) -> &str {
         &self.parts.event_type
     }
 
     /// Get the version component
-    #[must_use] pub fn version(&self) -> &str {
+    #[must_use]
+    pub fn version(&self) -> &str {
         &self.parts.version
     }
 
@@ -166,7 +185,10 @@ impl SubjectParts {
     /// # Example
     ///
     /// ```
-    /// use cim_subject::{Subject, SubjectParts};
+    /// use cim_subject::{
+    ///     Subject,
+    ///     SubjectParts,
+    /// };
     ///
     /// let parts = SubjectParts::parse("domain.aggregate.event_type.version").unwrap();
     /// assert_eq!(parts.context, "domain");
@@ -178,17 +200,26 @@ impl SubjectParts {
         let parts: Vec<&str> = subject.split('.').collect();
 
         if parts.len() != 4 {
-            return Err(SubjectError::invalid_format(format!("Subject must have exactly 4 parts separated by dots, got {}: '{}'", 
-                parts.len(), subject
+            return Err(SubjectError::invalid_format(format!(
+                "Subject must have exactly 4 parts separated by dots, got {}: '{}'",
+                parts.len(),
+                subject
             )));
         }
 
         // Validate each part
         for (i, part) in parts.iter().enumerate() {
             if part.is_empty() {
-                return Err(SubjectError::invalid_format(format!("Subject part {} cannot be empty in '{}'", i + 1, subject)));
+                return Err(SubjectError::invalid_format(format!(
+                    "Subject part {} cannot be empty in '{}'",
+                    i + 1,
+                    subject
+                )));
             }
-            if !part.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
+            if !part
+                .chars()
+                .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
+            {
                 return Err(SubjectError::invalid_format(format!(
                     "Subject part '{part}' contains invalid characters in '{subject}'"
                 )));
@@ -204,8 +235,12 @@ impl SubjectParts {
     }
 
     /// Convert back to a subject string
-    #[must_use] pub fn to_subject(&self) -> String {
-        format!("{}.{}.{}.{}", self.context, self.aggregate, self.event_type, self.version)
+    #[must_use]
+    pub fn to_subject(&self) -> String {
+        format!(
+            "{}.{}.{}.{}",
+            self.context, self.aggregate, self.event_type, self.version
+        )
     }
 }
 
@@ -234,7 +269,8 @@ pub struct SubjectBuilder {
 
 impl SubjectBuilder {
     /// Create a new subject builder
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self::default()
     }
 

@@ -2,12 +2,23 @@
 
 //! Subject Algebra - compositional operations on subjects
 
-use crate::error::{Result, SubjectError};
-use crate::pattern::Pattern;
-use crate::subject::{Subject, SubjectParts};
-use dashmap::DashMap;
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+
+use dashmap::DashMap;
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+use crate::error::{
+    Result,
+    SubjectError,
+};
+use crate::pattern::Pattern;
+use crate::subject::{
+    Subject,
+    SubjectParts,
+};
 
 /// Type alias for composition functions
 pub type ComposerFn = Arc<dyn Fn(&Subject, &Subject) -> Result<Subject> + Send + Sync>;
@@ -32,7 +43,8 @@ impl Default for SubjectAlgebra {
 
 impl SubjectAlgebra {
     /// Create a new Subject Algebra instance
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             rules: Arc::new(DashMap::new()),
             transformations: Arc::new(DashMap::new()),
@@ -112,7 +124,12 @@ impl SubjectAlgebra {
     /// Choice composition: choose left or right based on condition
     fn choice(&self, left: &Subject, right: &Subject, condition: &str) -> Result<Subject> {
         // Check if there's a registered rule for this choice
-        let rule_key = format!("choice:{}:{}:{}", left.event_type(), right.event_type(), condition);
+        let rule_key = format!(
+            "choice:{}:{}:{}",
+            left.event_type(),
+            right.event_type(),
+            condition
+        );
         if let Some(rule) = self.rules.get(&rule_key) {
             return (rule.composer)(left, right);
         }
@@ -176,7 +193,8 @@ impl SubjectAlgebra {
     }
 
     /// Find all subjects matching a pattern
-    #[must_use] pub fn find_matching(&self, pattern: &Pattern, subjects: &[Subject]) -> Vec<Subject> {
+    #[must_use]
+    pub fn find_matching(&self, pattern: &Pattern, subjects: &[Subject]) -> Vec<Subject> {
         subjects
             .iter()
             .filter(|s| pattern.matches(s))
@@ -185,7 +203,8 @@ impl SubjectAlgebra {
     }
 
     /// Create a subject lattice (partial order)
-    #[must_use] pub fn create_lattice(&self, subjects: &[Subject]) -> SubjectLattice {
+    #[must_use]
+    pub fn create_lattice(&self, subjects: &[Subject]) -> SubjectLattice {
         SubjectLattice::new(subjects)
     }
 }
@@ -200,22 +219,22 @@ pub enum AlgebraOperation {
     /// Choice between subjects based on condition
     Choice {
         /// The condition that determines which subject to choose
-        condition: String
+        condition: String,
     },
     /// Transform subject using named transformation
     Transform {
         /// The name of the transformation to apply
-        name: String
+        name: String,
     },
     /// Project specific fields from subject
     Project {
         /// The fields to project from the subject
-        fields: Vec<String>
+        fields: Vec<String>,
     },
     /// Inject additional context into subject
     Inject {
         /// The context to inject into the subject
-        context: String
+        context: String,
     },
 }
 
@@ -253,7 +272,10 @@ impl Transformation {
     /// - The transformation function itself returns an error
     pub fn apply(&self, subject: &Subject) -> Result<Subject> {
         if !self.input_pattern.matches(subject) {
-            return Err(SubjectError::validation_error(format!("Subject '{subject}' does not match transformation pattern '{}'", self.input_pattern)));
+            return Err(SubjectError::validation_error(format!(
+                "Subject '{subject}' does not match transformation pattern '{}'",
+                self.input_pattern
+            )));
         }
         (self.transform)(subject)
     }
@@ -270,7 +292,8 @@ pub struct SubjectLattice {
 
 impl SubjectLattice {
     /// Create a new subject lattice
-    #[must_use] pub fn new(subjects: &[Subject]) -> Self {
+    #[must_use]
+    pub fn new(subjects: &[Subject]) -> Self {
         let mut lattice = Self {
             subjects: subjects.to_vec(),
             ordering: Vec::new(),
@@ -309,7 +332,8 @@ impl SubjectLattice {
     }
 
     /// Find the join (least upper bound) of two subjects
-    #[must_use] pub fn join(&self, a: &Subject, b: &Subject) -> Option<Subject> {
+    #[must_use]
+    pub fn join(&self, a: &Subject, b: &Subject) -> Option<Subject> {
         // Find common ancestors
         let a_idx = self.subjects.iter().position(|s| s == a)?;
         let b_idx = self.subjects.iter().position(|s| s == b)?;
@@ -405,13 +429,9 @@ mod tests {
 
         let subject = Subject::new("users.person.created.v1").unwrap();
         let result = algebra
-            .compose(
-                &subject,
-                &subject,
-                AlgebraOperation::Transform {
-                    name: "anonymize".to_string(),
-                },
-            )
+            .compose(&subject, &subject, AlgebraOperation::Transform {
+                name: "anonymize".to_string(),
+            })
             .unwrap();
 
         assert_eq!(result.aggregate(), "anonymous");

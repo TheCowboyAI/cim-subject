@@ -1,13 +1,19 @@
 // Copyright 2025 Cowboy AI, LLC.
 
 //! Correlation and causation tracking example
-//! 
+//!
 //! This example demonstrates how to maintain message correlation across
 //! distributed transactions and track causation chains for debugging.
 
-use cim_subject::{MessageIdentity, CorrelationId, CausationId, IdType};
-use uuid::Uuid;
 use std::collections::HashMap;
+
+use cim_subject::{
+    CausationId,
+    CorrelationId,
+    IdType,
+    MessageIdentity,
+};
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 struct MessageFlow {
@@ -33,13 +39,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         caused_by: None,
     };
-    
+
     println!("1. Customer places order:");
     println!("   Message ID: {}", order_id);
-    println!("   Correlation ID: {}", order_placed.identity.correlation_id.0);
+    println!(
+        "   Correlation ID: {}",
+        order_placed.identity.correlation_id.0
+    );
     println!("   Causation ID: {}", order_placed.identity.causation_id.0);
     println!("   This is a ROOT message (all IDs are the same)\n");
-    
+
     message_flows.insert(order_id, order_placed.clone());
 
     // 2. Order service validates and creates order (caused by order placement)
@@ -53,13 +62,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         caused_by: Some(order_id),
     };
-    
+
     println!("2. Order service creates order:");
     println!("   Message ID: {}", order_created_id);
-    println!("   Correlation ID: {}", order_created.identity.correlation_id.0);
+    println!(
+        "   Correlation ID: {}",
+        order_created.identity.correlation_id.0
+    );
     println!("   Causation ID: {}", order_created.identity.causation_id.0);
     println!("   Caused by: OrderPlaced ({})\n", order_id);
-    
+
     message_flows.insert(order_created_id, order_created.clone());
 
     // 3. Inventory service reserves stock (caused by order creation)
@@ -73,13 +85,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         caused_by: Some(order_created_id),
     };
-    
+
     println!("3. Inventory service reserves stock:");
     println!("   Message ID: {}", stock_reserved_id);
-    println!("   Correlation ID: {}", stock_reserved.identity.correlation_id.0);
-    println!("   Causation ID: {}", stock_reserved.identity.causation_id.0);
+    println!(
+        "   Correlation ID: {}",
+        stock_reserved.identity.correlation_id.0
+    );
+    println!(
+        "   Causation ID: {}",
+        stock_reserved.identity.causation_id.0
+    );
     println!("   Caused by: OrderCreated ({})\n", order_created_id);
-    
+
     message_flows.insert(stock_reserved_id, stock_reserved.clone());
 
     // 4. Payment service processes payment (also caused by order creation)
@@ -93,13 +111,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         caused_by: Some(order_created_id),
     };
-    
+
     println!("4. Payment service processes payment:");
     println!("   Message ID: {}", payment_processed_id);
-    println!("   Correlation ID: {}", payment_processed.identity.correlation_id.0);
-    println!("   Causation ID: {}", payment_processed.identity.causation_id.0);
+    println!(
+        "   Correlation ID: {}",
+        payment_processed.identity.correlation_id.0
+    );
+    println!(
+        "   Causation ID: {}",
+        payment_processed.identity.causation_id.0
+    );
     println!("   Caused by: OrderCreated ({})\n", order_created_id);
-    
+
     message_flows.insert(payment_processed_id, payment_processed.clone());
 
     // 5. Notification sent (caused by both stock reservation and payment)
@@ -113,20 +137,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         caused_by: Some(payment_processed_id),
     };
-    
+
     println!("5. Notification service sends confirmation:");
     println!("   Message ID: {}", notification_sent_id);
-    println!("   Correlation ID: {}", notification_sent.identity.correlation_id.0);
-    println!("   Causation ID: {}", notification_sent.identity.causation_id.0);
-    println!("   Caused by: PaymentProcessed ({})\n", payment_processed_id);
-    
+    println!(
+        "   Correlation ID: {}",
+        notification_sent.identity.correlation_id.0
+    );
+    println!(
+        "   Causation ID: {}",
+        notification_sent.identity.causation_id.0
+    );
+    println!(
+        "   Caused by: PaymentProcessed ({})\n",
+        payment_processed_id
+    );
+
     message_flows.insert(notification_sent_id, notification_sent);
 
     // Demonstrate correlation tracking
     println!("\n=== Correlation Analysis ===\n");
-    println!("All messages in this transaction share correlation ID: {}\n", 
-        order_placed.identity.correlation_id.0);
-    
+    println!(
+        "All messages in this transaction share correlation ID: {}\n",
+        order_placed.identity.correlation_id.0
+    );
+
     println!("Message flow for this transaction:");
     for (id, flow) in &message_flows {
         if let IdType::Uuid(correlation_uuid) = &flow.identity.correlation_id.0 {
@@ -144,10 +179,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Demonstrate causation chain tracing
     println!("\n=== Causation Chain Tracing ===\n");
     println!("Tracing backwards from NotificationSent:");
-    
+
     let mut current_id = Some(notification_sent_id);
     let mut depth = 0;
-    
+
     while let Some(id) = current_id {
         if let Some(flow) = message_flows.get(&id) {
             println!("{}{} ({})", "  ".repeat(depth), flow.name, id);
@@ -162,7 +197,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n=== NATS Header Mapping ===\n");
     println!("When publishing via NATS, set these headers:");
     println!("  X-Message-ID: {}", notification_sent_id);
-    println!("  X-Correlation-ID: {}", order_placed.identity.correlation_id.0);
+    println!(
+        "  X-Correlation-ID: {}",
+        order_placed.identity.correlation_id.0
+    );
     println!("  X-Causation-ID: {}", payment_processed_id);
 
     Ok(())

@@ -1,15 +1,21 @@
 // Copyright 2025 Cowboy AI, LLC.
 
 //! Permission-based access control example
-//! 
+//!
 //! This example demonstrates how to implement fine-grained permissions
 //! for message routing and access control.
 
-use cim_subject::{
-    Subject, 
-    permissions::{Permissions, PermissionsBuilder, Operation, Policy}
-};
 use std::collections::HashMap;
+
+use cim_subject::{
+    permissions::{
+        Operation,
+        Permissions,
+        PermissionsBuilder,
+        Policy,
+    },
+    Subject,
+};
 
 #[derive(Debug, Clone)]
 struct ServicePermissions {
@@ -41,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         name: "Order Service".to_string(),
         permissions: order_permissions,
     };
-    
+
     services.insert("order_service", order_service);
 
     // Inventory Service permissions
@@ -61,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         name: "Inventory Service".to_string(),
         permissions: inventory_permissions,
     };
-    
+
     services.insert("inventory_service", inventory_service);
 
     // Admin Service - has full access
@@ -75,7 +81,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         name: "Admin Service".to_string(),
         permissions: admin_permissions,
     };
-    
+
     services.insert("admin_service", admin_service);
 
     // Read-only Analytics Service
@@ -91,7 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         name: "Analytics Service".to_string(),
         permissions: analytics_permissions,
     };
-    
+
     services.insert("analytics_service", analytics_service);
 
     // Test scenarios
@@ -99,8 +105,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     test_service_permissions(&services["order_service"], vec![
         ("orders.commands.order.create", Operation::Publish, true),
         ("orders.events.order.created", Operation::Publish, true),
-        ("inventory.events.stock.reserved", Operation::Subscribe, true),
-        ("inventory.commands.stock.reserve", Operation::Publish, false),
+        (
+            "inventory.events.stock.reserved",
+            Operation::Subscribe,
+            true,
+        ),
+        (
+            "inventory.commands.stock.reserve",
+            Operation::Publish,
+            false,
+        ),
         ("orders.internal.metrics", Operation::Subscribe, false),
         ("catalog.queries.product.get", Operation::Request, true),
     ])?;
@@ -108,7 +122,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n2. Testing Inventory Service permissions:\n");
     test_service_permissions(&services["inventory_service"], vec![
         ("inventory.events.stock.updated", Operation::Publish, true),
-        ("inventory.commands.stock.update", Operation::Subscribe, true),
+        (
+            "inventory.commands.stock.update",
+            Operation::Subscribe,
+            true,
+        ),
         ("orders.events.order.placed", Operation::Subscribe, true),
         ("orders.commands.order.create", Operation::Publish, false),
         ("warehouse.locations.update", Operation::Publish, true),
@@ -127,7 +145,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n4. Testing Analytics Service permissions:\n");
     test_service_permissions(&services["analytics_service"], vec![
         ("orders.events.order.created", Operation::Subscribe, true),
-        ("payments.events.payment.processed", Operation::Subscribe, true),
+        (
+            "payments.events.payment.processed",
+            Operation::Subscribe,
+            true,
+        ),
         ("orders.commands.order.create", Operation::Publish, false),
         ("reporting.queries.sales.daily", Operation::Request, true),
         ("users.queries.count.active", Operation::Request, true),
@@ -135,22 +157,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Demonstrate permission inheritance with patterns
     println!("\n5. Permission inheritance with patterns:\n");
-    
+
     let subject = Subject::new("orders.events.order.v1")?;
-    
+
     println!("  Subject: {}", subject.as_str());
     for (_name, service) in &services {
         let can_publish = service.permissions.is_allowed(&subject, Operation::Publish);
-        let can_subscribe = service.permissions.is_allowed(&subject, Operation::Subscribe);
-        
+        let can_subscribe = service
+            .permissions
+            .is_allowed(&subject, Operation::Subscribe);
+
         println!("    {} ->", service.name);
         println!("      Can publish: {}", if can_publish { "✓" } else { "✗" });
-        println!("      Can subscribe: {}", if can_subscribe { "✓" } else { "✗" });
+        println!(
+            "      Can subscribe: {}",
+            if can_subscribe { "✓" } else { "✗" }
+        );
     }
 
     // Example 6: Dynamic permission updates
     println!("\n\n6. Dynamic permission updates:\n");
-    
+
     // Create a mutable service with evolving permissions
     let mut dynamic_service = ServicePermissions {
         name: "Dynamic Service".to_string(),
@@ -159,20 +186,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow("temp.>", &[Operation::Subscribe])?
             .build(),
     };
-    
+
     println!("  Initial permissions:");
     test_service_permissions(&dynamic_service, vec![
         ("temp.data.upload", Operation::Subscribe, true),
         ("temp.data.upload", Operation::Publish, false),
     ])?;
-    
+
     // Grant additional permissions
     dynamic_service.permissions = PermissionsBuilder::new()
         .default_policy(Policy::Deny)
         .allow("temp.>", &[Operation::Subscribe])?
         .allow("temp.data.>", &[Operation::Publish])?
         .build();
-    
+
     println!("\n  After granting publish permissions:");
     test_service_permissions(&dynamic_service, vec![
         ("temp.data.upload", Operation::Subscribe, true),
@@ -189,14 +216,15 @@ fn test_service_permissions(
     for (subject_str, operation, expected) in tests {
         let subject = Subject::new(subject_str)?;
         let allowed = service.permissions.is_allowed(&subject, operation);
-        
+
         let status = if allowed == expected {
             "✓"
         } else {
             "✗ UNEXPECTED"
         };
-        
-        println!("  {} {} on {} -> {} {}",
+
+        println!(
+            "  {} {} on {} -> {} {}",
             match operation {
                 Operation::Publish => "PUB",
                 Operation::Subscribe => "SUB",
@@ -206,13 +234,13 @@ fn test_service_permissions(
             subject_str,
             if allowed { "allowed " } else { "denied  " },
             status,
-            if allowed != expected { 
+            if allowed != expected {
                 format!("(expected {})", if expected { "allowed" } else { "denied" })
             } else {
                 String::new()
             }
         );
     }
-    
+
     Ok(())
 }

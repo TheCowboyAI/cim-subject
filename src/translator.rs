@@ -2,14 +2,25 @@
 
 //! Subject translation between different schemas
 
-use crate::error::{Result, SubjectError};
-use crate::pattern::Pattern;
-use crate::subject::{Subject, SubjectParts};
-use dashmap::DashMap;
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::sync::Arc;
+
+use dashmap::DashMap;
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
 use crate::correlation::MessageIdentity;
+use crate::error::{
+    Result,
+    SubjectError,
+};
+use crate::pattern::Pattern;
+use crate::subject::{
+    Subject,
+    SubjectParts,
+};
 
 // Type alias to simplify the complex function type
 type TranslateFn = Arc<dyn Fn(&Subject) -> Result<Subject> + Send + Sync>;
@@ -34,7 +45,8 @@ impl Default for Translator {
 
 impl Translator {
     /// Create a new translator
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             rules: Arc::new(DashMap::new()),
             reverse_cache: Arc::new(DashMap::new()),
@@ -86,7 +98,8 @@ impl Translator {
     }
 
     /// Create a bidirectional translator
-    #[must_use] pub fn bidirectional(
+    #[must_use]
+    pub fn bidirectional(
         forward_rules: Vec<TranslationRule>,
         reverse_rules: Vec<TranslationRule>,
     ) -> Self {
@@ -122,14 +135,18 @@ impl Translator {
         // Build the subject from parts
         let subject_str = format!("{context}.{aggregate}.{event}.{version}");
         let subject = Subject::new(&subject_str)?;
-        
+
         // Translate the subject
         let translated_subject = self.translate(&subject)?;
-        
+
         // Convert to string for NATS
         let subject_string = translated_subject.to_string();
-        
-        Ok(NatsMessage::with_correlation(subject_string, payload, identity))
+
+        Ok(NatsMessage::with_correlation(
+            subject_string,
+            payload,
+            identity,
+        ))
     }
 }
 
@@ -165,28 +182,28 @@ impl TranslationRule {
     }
 
     /// Add a target pattern for validation
-    #[must_use] pub fn with_target_pattern(mut self, pattern: Pattern) -> Self {
+    #[must_use]
+    pub fn with_target_pattern(mut self, pattern: Pattern) -> Self {
         self.target_pattern = Some(pattern);
         self
     }
 
     /// Add a reverse translation function
     #[must_use]
-    pub fn with_reverse(
-        mut self,
-        reverse_fn: TranslateFn,
-    ) -> Self {
+    pub fn with_reverse(mut self, reverse_fn: TranslateFn) -> Self {
         self.reverse_fn = Some(reverse_fn);
         self
     }
 
     /// Check if this rule matches a source subject
-    #[must_use] pub fn matches_source(&self, subject: &Subject) -> bool {
+    #[must_use]
+    pub fn matches_source(&self, subject: &Subject) -> bool {
         self.source_pattern.matches(subject)
     }
 
     /// Check if this rule matches a target subject
-    #[must_use] pub fn matches_target(&self, subject: &Subject) -> bool {
+    #[must_use]
+    pub fn matches_target(&self, subject: &Subject) -> bool {
         self.target_pattern
             .as_ref()
             .is_some_and(|p| p.matches(subject))
@@ -266,7 +283,8 @@ pub struct TranslatorBuilder {
 
 impl TranslatorBuilder {
     /// Create a new translator builder
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self::default()
     }
 
@@ -275,11 +293,7 @@ impl TranslatorBuilder {
     /// # Errors
     ///
     /// Returns `SubjectError` if pattern creation fails
-    pub fn map(
-        mut self,
-        source_pattern: &str,
-        target_template: &str,
-    ) -> Result<Self> {
+    pub fn map(mut self, source_pattern: &str, target_template: &str) -> Result<Self> {
         let pattern = Pattern::new(source_pattern)?;
         let template = target_template.to_string();
 
@@ -306,11 +320,7 @@ impl TranslatorBuilder {
     /// # Errors
     ///
     /// Returns `SubjectError` if pattern creation fails
-    pub fn translate_context(
-        mut self,
-        from_context: &str,
-        to_context: &str,
-    ) -> Result<Self> {
+    pub fn translate_context(mut self, from_context: &str, to_context: &str) -> Result<Self> {
         let pattern = Pattern::new(format!("{from_context}.>"))?;
         let to_ctx = to_context.to_string();
 
@@ -340,7 +350,8 @@ impl TranslatorBuilder {
     }
 
     /// Build the translator
-    #[must_use] pub fn build(self) -> Translator {
+    #[must_use]
+    pub fn build(self) -> Translator {
         let translator = Translator::new();
 
         for (name, rule) in self.rules {
@@ -388,18 +399,19 @@ pub struct NatsMessage {
 
 impl NatsMessage {
     /// Create a new NATS message with correlation headers
-    #[must_use] pub fn with_correlation(
+    #[must_use]
+    pub fn with_correlation(
         subject: String,
         payload: serde_json::Value,
         identity: &MessageIdentity,
     ) -> Self {
         let mut headers = HashMap::new();
-        
+
         // Add correlation headers
         for (key, value) in identity.to_nats_headers() {
             headers.insert(key.to_string(), value);
         }
-        
+
         Self {
             subject,
             payload,

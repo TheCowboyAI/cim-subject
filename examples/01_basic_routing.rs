@@ -1,11 +1,14 @@
 // Copyright 2025 Cowboy AI, LLC.
 
 //! Basic message routing example demonstrating subject patterns and matching
-//! 
+//!
 //! This example shows how to use cim-subject for service-to-service routing
 //! in a microservices architecture.
 
-use cim_subject::{Subject, Pattern};
+use cim_subject::{
+    Pattern,
+    Subject,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== Basic Message Routing Example ===\n");
@@ -15,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let inventory_service = Pattern::new("inventory.>")?;
     let notification_service = Pattern::new("*.events.>")?;
     let audit_service = Pattern::new(">")?; // Subscribes to everything
-    
+
     println!("Service subscription patterns:");
     println!("  Order Service: {}", order_service.as_str());
     println!("  Inventory Service: {}", inventory_service.as_str());
@@ -34,7 +37,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for cmd in commands {
         let subject = Subject::new(cmd)?;
         println!("\n  Command: {}", subject.as_str());
-        
+
         if order_service.matches(&subject) {
             println!("    ✓ Routed to Order Service");
         }
@@ -61,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for evt in events {
         let subject = Subject::new(evt)?;
         println!("\n  Event: {}", subject.as_str());
-        
+
         if order_service.matches(&subject) {
             println!("    ✓ Received by Order Service");
         }
@@ -82,13 +85,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let p2 = Pattern::new("orders.events.*.created")?;
     let p3 = Pattern::new("orders.events.>")?;
     let p4 = Pattern::new("*.events.>")?;
-    
-    println!("  {} is more specific than {}: {}", 
-        p1.as_str(), p2.as_str(), p1.is_more_specific_than(&p2));
-    println!("  {} is more specific than {}: {}", 
-        p2.as_str(), p3.as_str(), p2.is_more_specific_than(&p3));
-    println!("  {} is more specific than {}: {}", 
-        p3.as_str(), p4.as_str(), p3.is_more_specific_than(&p4));
+
+    println!(
+        "  {} is more specific than {}: {}",
+        p1.as_str(),
+        p2.as_str(),
+        p1.is_more_specific_than(&p2)
+    );
+    println!(
+        "  {} is more specific than {}: {}",
+        p2.as_str(),
+        p3.as_str(),
+        p2.is_more_specific_than(&p3)
+    );
+    println!(
+        "  {} is more specific than {}: {}",
+        p3.as_str(),
+        p4.as_str(),
+        p3.is_more_specific_than(&p4)
+    );
 
     Ok(())
 }

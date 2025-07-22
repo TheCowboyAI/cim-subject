@@ -2,11 +2,22 @@
 
 //! Pattern matching for subjects with wildcard support
 
-use crate::error::{Result, SubjectError};
-use crate::subject::Subject;
-use serde::{Deserialize, Serialize};
-use std::fmt::{self, Display};
+use std::fmt::{
+    self,
+    Display,
+};
 use std::str::FromStr;
+
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+use crate::error::{
+    Result,
+    SubjectError,
+};
+use crate::subject::Subject;
 
 /// A pattern for matching subjects with wildcards
 ///
@@ -56,8 +67,12 @@ impl Pattern {
         for (i, part) in parts.iter().enumerate() {
             match *part {
                 "" => {
-                    return Err(SubjectError::invalid_pattern(format!("Empty token at position {} in pattern '{}'", i + 1, pattern)));
-                }
+                    return Err(SubjectError::invalid_pattern(format!(
+                        "Empty token at position {} in pattern '{}'",
+                        i + 1,
+                        pattern
+                    )));
+                },
                 "*" => tokens.push(Token::SingleWildcard),
                 ">" => {
                     if i != parts.len() - 1 {
@@ -66,7 +81,7 @@ impl Pattern {
                         ));
                     }
                     tokens.push(Token::MultiWildcard);
-                }
+                },
                 literal => {
                     // Validate literal token
                     if !literal
@@ -78,7 +93,7 @@ impl Pattern {
                         )));
                     }
                     tokens.push(Token::Literal(literal.to_string()));
-                }
+                },
             }
         }
 
@@ -86,12 +101,14 @@ impl Pattern {
     }
 
     /// Check if a subject matches this pattern
-    #[must_use] pub fn matches(&self, subject: &Subject) -> bool {
+    #[must_use]
+    pub fn matches(&self, subject: &Subject) -> bool {
         self.matches_str(subject.as_str())
     }
 
     /// Check if a subject string matches this pattern
-    #[must_use] pub fn matches_str(&self, subject: &str) -> bool {
+    #[must_use]
+    pub fn matches_str(&self, subject: &str) -> bool {
         let subject_parts: Vec<&str> = subject.split('.').collect();
         self.matches_parts(&subject_parts)
     }
@@ -106,19 +123,19 @@ impl Pattern {
                 Token::MultiWildcard => {
                     // > matches everything remaining
                     return true;
-                }
+                },
                 Token::SingleWildcard => {
                     // * matches exactly one token
                     pattern_idx += 1;
                     subject_idx += 1;
-                }
+                },
                 Token::Literal(literal) => {
                     if literal != subject_parts[subject_idx] {
                         return false;
                     }
                     pattern_idx += 1;
                     subject_idx += 1;
-                }
+                },
             }
         }
 
@@ -127,7 +144,8 @@ impl Pattern {
     }
 
     /// Get the raw pattern string
-    #[must_use] pub fn as_str(&self) -> &str {
+    #[must_use]
+    pub fn as_str(&self) -> &str {
         &self.raw
     }
 
@@ -135,10 +153,17 @@ impl Pattern {
     ///
     /// A pattern is more specific if it has fewer wildcards or
     /// more literal tokens before wildcards
-    #[must_use] pub fn is_more_specific_than(&self, other: &Pattern) -> bool {
+    #[must_use]
+    pub fn is_more_specific_than(&self, other: &Pattern) -> bool {
         // First, check if one has a multi-wildcard and the other doesn't
-        let self_has_multi = self.tokens.iter().any(|t| matches!(t, Token::MultiWildcard));
-        let other_has_multi = other.tokens.iter().any(|t| matches!(t, Token::MultiWildcard));
+        let self_has_multi = self
+            .tokens
+            .iter()
+            .any(|t| matches!(t, Token::MultiWildcard));
+        let other_has_multi = other
+            .tokens
+            .iter()
+            .any(|t| matches!(t, Token::MultiWildcard));
 
         // Pattern without multi-wildcard is more specific than one with
         if self_has_multi != other_has_multi {
@@ -173,9 +198,10 @@ impl Pattern {
             .position(|t| matches!(t, Token::SingleWildcard | Token::MultiWildcard));
 
         match (self_first_wildcard, other_first_wildcard) {
-            (None, Some(_)) => true, // Self is all literal, more specific
+            (None, Some(_)) => true,     // Self is all literal, more specific
             (Some(a), Some(b)) => a > b, // Wildcard appears later in self
-            _ => false, // All other cases: equally specific or other is more specific
+            _ => false,                  /* All other cases: equally specific or other is more
+                                           * specific */
         }
     }
 }
