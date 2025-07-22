@@ -84,3 +84,88 @@ impl SubjectError {
         Self::NotFound(msg.into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_creation_helpers() {
+        // Test invalid_format
+        let err = SubjectError::invalid_format("bad format");
+        assert_eq!(err.to_string(), "Invalid subject format: bad format");
+        assert!(matches!(err, SubjectError::InvalidFormat(_)));
+
+        // Test invalid_pattern
+        let err = SubjectError::invalid_pattern("bad pattern");
+        assert_eq!(err.to_string(), "Invalid pattern: bad pattern");
+        assert!(matches!(err, SubjectError::InvalidPattern(_)));
+
+        // Test parse_error
+        let err = SubjectError::parse_error("parse failed");
+        assert_eq!(err.to_string(), "Parse error: parse failed");
+        assert!(matches!(err, SubjectError::ParseError(_)));
+
+        // Test permission_denied
+        let err = SubjectError::permission_denied("access denied");
+        assert_eq!(err.to_string(), "Permission denied: access denied");
+        assert!(matches!(err, SubjectError::PermissionDenied(_)));
+
+        // Test translation_error
+        let err = SubjectError::translation_error("translation failed");
+        assert_eq!(err.to_string(), "Translation error: translation failed");
+        assert!(matches!(err, SubjectError::TranslationError(_)));
+
+        // Test composition_error
+        let err = SubjectError::composition_error("composition failed");
+        assert_eq!(err.to_string(), "Composition error: composition failed");
+        assert!(matches!(err, SubjectError::CompositionError(_)));
+
+        // Test validation_error
+        let err = SubjectError::validation_error("validation failed");
+        assert_eq!(err.to_string(), "Validation error: validation failed");
+        assert!(matches!(err, SubjectError::ValidationError(_)));
+
+        // Test not_found
+        let err = SubjectError::not_found("item not found");
+        assert_eq!(err.to_string(), "Not found: item not found");
+        assert!(matches!(err, SubjectError::NotFound(_)));
+    }
+
+    #[test]
+    fn test_error_with_string_type() {
+        // Test with String instead of &str
+        let msg = String::from("dynamic message");
+        let err = SubjectError::invalid_format(msg);
+        assert_eq!(err.to_string(), "Invalid subject format: dynamic message");
+    }
+
+    #[test]
+    fn test_error_equality() {
+        let err1 = SubjectError::invalid_format("test");
+        let err2 = SubjectError::invalid_format("test");
+        let err3 = SubjectError::invalid_format("different");
+        
+        assert_eq!(err1, err2);
+        assert_ne!(err1, err3);
+    }
+
+    #[test]
+    fn test_error_clone() {
+        let err1 = SubjectError::parse_error("original");
+        let err2 = err1.clone();
+        
+        assert_eq!(err1, err2);
+    }
+
+    #[test]
+    fn test_result_type_alias() {
+        fn test_function() -> Result<String> {
+            Err(SubjectError::not_found("test"))
+        }
+        
+        let result = test_function();
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "Not found: test");
+    }
+}
