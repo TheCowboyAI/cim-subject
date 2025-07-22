@@ -16,8 +16,8 @@
 //! ```
 
 use cim_subject::{
-    AlgebraOperation, CompositionRule, Pattern, PatternMatcher, Result, Subject, SubjectAlgebra,
-    SubjectBuilder, SubjectError, SubjectParts,
+    AlgebraOperation, CompositionRule, Pattern, Subject, SubjectAlgebra,
+    SubjectParts,
 };
 use std::sync::Arc;
 
@@ -364,7 +364,7 @@ fn test_custom_composition_rules() {
         name: "saga".to_string(),
         left_pattern: Pattern::new("saga.*.started.v1").unwrap(),
         right_pattern: Pattern::new("saga.*.completed.v1").unwrap(),
-        composer: Arc::new(|left, right| {
+        composer: Arc::new(|left, _right| {
             // Extract saga name from aggregate
             let saga_name = left.aggregate();
             Ok(Subject::from_parts(SubjectParts::new(

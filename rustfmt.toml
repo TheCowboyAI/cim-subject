@@ -1,0 +1,40 @@
+# Rustfmt configuration for CIM-Subject
+
+# Use stable features only
+edition = "2021"
+
+# Line width
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+
+# Comments
+comment_width = 80
+wrap_comments = true
+normalize_comments = true
+normalize_doc_attributes = true
+
+# Imports
+imports_indent = "Block"
+imports_layout = "Vertical"
+group_imports = "StdExternalCrate"
+reorder_imports = true
+reorder_modules = true
+
+# Code formatting
+use_field_init_shorthand = true
+use_try_shorthand = true
+format_code_in_doc_comments = true
+format_strings = false
+format_macro_matchers = true
+format_macro_bodies = true
+
+# Spacing
+blank_lines_upper_bound = 1
+blank_lines_lower_bound = 0
+
+# Other
+overflow_delimited_expr = true
+struct_lit_single_line = true
+where_single_line = true
+match_block_trailing_comma = true

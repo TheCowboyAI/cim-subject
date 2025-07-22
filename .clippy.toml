@@ -1,0 +1,23 @@
+# Clippy configuration for CIM-Subject
+
+# Set the MSRV
+msrv = "1.75.0"
+
+# Deny warnings in CI
+warn-on-all-wildcard-imports = true
+
+# Allow certain lints that are too restrictive
+allow-expect-in-tests = true
+allow-unwrap-in-tests = true
+allow-dbg-in-tests = true
+allow-print-in-tests = true
+
+# Set complexity thresholds
+cognitive-complexity-threshold = 30
+too-many-lines-threshold = 100
+too-many-arguments-threshold = 7
+type-complexity-threshold = 250
+single-char-binding-names-threshold = 4
+
+# Documentation
+missing-docs-in-crate-items = true

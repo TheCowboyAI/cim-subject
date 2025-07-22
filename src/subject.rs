@@ -166,10 +166,13 @@ impl SubjectParts {
     /// # Example
     ///
     /// ```
-    /// use cim_subject::Subject;
+    /// use cim_subject::{Subject, SubjectParts};
     ///
-    /// let subject = Subject::parse("domain.entity.operation").unwrap();
-    /// assert_eq!(subject.parts(), vec!["domain", "entity", "operation"]);
+    /// let parts = SubjectParts::parse("domain.aggregate.event_type.version").unwrap();
+    /// assert_eq!(parts.context, "domain");
+    /// assert_eq!(parts.aggregate, "aggregate");
+    /// assert_eq!(parts.event_type, "event_type");
+    /// assert_eq!(parts.version, "version");
     /// ```
     pub fn parse(subject: &str) -> Result<Self> {
         let parts: Vec<&str> = subject.split('.').collect();

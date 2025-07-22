@@ -16,7 +16,7 @@
 //! ```
 
 use cim_subject::{
-    Pattern, Result, Subject, SubjectParts,
+    Pattern, Subject, SubjectParts,
     translator::{TranslationRule, Translator, TranslatorBuilder},
 };
 use std::sync::Arc;
@@ -187,7 +187,7 @@ fn test_multi_stage_translation() {
         Arc::new(|subject| {
             let parts: Vec<&str> = subject.as_str().split('.').collect();
             if parts.len() >= 4 {
-                let new_subject = format!("v2.{parts[1]}.{parts[2]}.event");
+                let new_subject = format!("v2.{}.{}.event", parts[1], parts[2]);
                 Subject::new(new_subject)
             } else {
                 Ok(subject.clone())
@@ -201,7 +201,7 @@ fn test_multi_stage_translation() {
         Arc::new(|subject| {
             let parts: Vec<&str> = subject.as_str().split('.').collect();
             if parts.len() >= 4 {
-                let new_subject = format!("v3.domain.{parts[1]}.{parts[2]}");
+                let new_subject = format!("v3.domain.{}.{}", parts[1], parts[2]);
                 Subject::new(new_subject)
             } else {
                 Ok(subject.clone())

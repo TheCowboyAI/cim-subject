@@ -2,12 +2,12 @@
 
 [package]
 name = "cim-subject"
-version = "0.3.0"
+version = "0.5.0"
 edition = "2021"
 authors = ["The CowboyAI Team"]
 description = "Subject Algebra for NATS-based domain routing and message translation"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/thecowboyai/alchemist"
+license = "MIT"
+repository = "https://github.com/thecowboyai/cim-subject"
 keywords = ["subject", "nats", "routing", "domain", "algebra"]
 categories = ["network-programming", "data-structures"]
 
@@ -37,3 +37,44 @@ cim-ipld = { git = "https://github.com/thecowboyai/cim-ipld", version = "0.5" }
 tokio = { version = "1.43", features = ["full", "test-util"] }
 proptest = "1.6"
 criterion = "0.5"
+chrono = "0.4"
+
+[[example]]
+name = "basic_routing"
+path = "examples/01_basic_routing.rs"
+
+[[example]]
+name = "correlation_tracking"
+path = "examples/02_correlation_tracking.rs"
+
+[[example]]
+name = "subject_validation"
+path = "examples/03_subject_validation.rs"
+
+[[example]]
+name = "permissions"
+path = "examples/04_permissions.rs"
+
+[[example]]
+name = "algebra_operations"
+path = "examples/05_algebra_operations.rs"
+
+[[example]]
+name = "translation"
+path = "examples/06_translation.rs"
+
+[[example]]
+name = "nats_integration"
+path = "examples/07_nats_integration.rs"
+
+[[example]]
+name = "mortgage_lending_routing"
+path = "examples/08_mortgage_lending_routing.rs"
+
+[[example]]
+name = "document_validation"
+path = "examples/09_document_validation.rs"
+
+[[example]]
+name = "rate_shopping"
+path = "examples/10_rate_shopping.rs"

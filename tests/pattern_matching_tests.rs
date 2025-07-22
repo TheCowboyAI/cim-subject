@@ -15,7 +15,7 @@
 //!     E --> F[Specificity Comparison]
 //! ```
 
-use cim_subject::{Pattern, PatternMatcher, Result, Subject};
+use cim_subject::{Pattern, PatternMatcher, Subject};
 
 // ============================================================================
 // Test: Basic Pattern Matching
@@ -113,7 +113,7 @@ fn test_pattern_specificity_ordering() {
     let p3 = Pattern::new("orders.order.*.v1").unwrap();
     let p4 = Pattern::new("orders.*.created.v1").unwrap();
     let p5 = Pattern::new("orders.*.*.v1").unwrap();
-    let p6 = Pattern::new("*.order.created.v1").unwrap();
+    let _p6 = Pattern::new("*.order.created.v1").unwrap();
     let p7 = Pattern::new("*.*.*.v1").unwrap();
     let p8 = Pattern::new("orders.>").unwrap();
     let p9 = Pattern::new("*.*.*.*").unwrap();
@@ -246,8 +246,8 @@ fn test_event_sourcing_patterns() {
 fn test_microservice_routing_patterns() {
     // Service-specific patterns
     let order_service = Pattern::new("orders.>").unwrap();
-    let user_service = Pattern::new("users.>").unwrap();
-    let notification_service = Pattern::new("notifications.>").unwrap();
+    let _user_service = Pattern::new("users.>").unwrap();
+    let _notification_service = Pattern::new("notifications.>").unwrap();
 
     // Route to order service
     assert!(order_service.matches_str("orders.order.created.v1"));
