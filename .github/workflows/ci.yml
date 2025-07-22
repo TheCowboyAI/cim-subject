@@ -93,6 +93,12 @@ jobs:
       with:
         file: ./cobertura.xml
         token: ${{ secrets.CODECOV_TOKEN }}
+      continue-on-error: true  # Don't fail the build if upload fails
+    
+    - name: Display coverage report
+      run: |
+        echo "Coverage report generated. To view locally, run:"
+        echo "cargo tarpaulin --verbose --all-features --workspace --timeout 300"
 
   security_audit:
     name: Security Audit
