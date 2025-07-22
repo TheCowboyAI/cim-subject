@@ -5,7 +5,7 @@
 [![CI](https://github.com/TheCowboyAI/cim-subject/actions/workflows/ci.yml/badge.svg)](https://github.com/TheCowboyAI/cim-subject/actions/workflows/ci.yml)
 [![Coverage](https://github.com/TheCowboyAI/cim-subject/actions/workflows/coverage.yml/badge.svg)](https://github.com/TheCowboyAI/cim-subject/actions/workflows/coverage.yml)
 [![Release](https://img.shields.io/github/v/release/TheCowboyAI/cim-subject)](https://github.com/TheCowboyAI/cim-subject/releases)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A foundational module within the CIM Domain framework that provides subject-based message routing, correlation tracking, and algebraic operations for NATS messaging in distributed domain-driven systems.
 
@@ -315,10 +315,6 @@ To update test results:
 
 ## License
 
-Licensed under either of:
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-- MIT license ([LICENSE-MIT](LICENSE-MIT))
-
-at your option.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Copyright (c) 2025 Cowboy AI, LLC.

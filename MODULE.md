@@ -10,7 +10,7 @@ The `cim-subject` module is a foundational component of the CIM (Composable Info
 
 - **Name**: cim-subject
 - **Version**: 0.5.0
-- **License**: MIT OR Apache-2.0
+- **License**: MIT
 - **Repository**: https://github.com/thecowboyai/cim-subject
 - **Crate**: https://crates.io/crates/cim-subject
 
@@ -285,8 +285,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
 ## License
 
-This project is licensed under either of:
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-- MIT license ([LICENSE-MIT](LICENSE-MIT))
-
-at your option.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
