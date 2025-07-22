@@ -18,6 +18,56 @@ The `cim-subject` module is a critical infrastructure component that enables:
 - **Algebraic operations** on subjects for flexible routing patterns
 - **Domain-Driven Design (DDD)** support through message identity and envelope patterns
 
+```mermaid
+graph TB
+    subgraph "CIM Subject Architecture"
+        subgraph "Core Components"
+            S[Subject]
+            P[Pattern]
+            MI[MessageIdentity]
+            SA[SubjectAlgebra]
+            T[Translator]
+            PM[Permissions]
+        end
+        
+        subgraph "Domain Integration"
+            DC[Domain Commands]
+            DE[Domain Events]
+            DQ[Domain Queries]
+        end
+        
+        subgraph "NATS Infrastructure"
+            NP[NATS Publisher]
+            NS[NATS Subscriber]
+            NJS[JetStream]
+        end
+        
+        DC --> S
+        DE --> S
+        DQ --> S
+        
+        S --> SA
+        S --> P
+        S --> T
+        
+        MI --> NP
+        PM --> NP
+        
+        P --> NS
+        PM --> NS
+        
+        NP --> NJS
+        NS --> NJS
+    end
+    
+    style S fill:#ff6b6b,stroke:#fff,stroke-width:3px,color:#fff
+    style MI fill:#4ecdc4,stroke:#fff,stroke-width:2px,color:#fff
+    style SA fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style P fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style T fill:#feca57,stroke:#fff,stroke-width:2px,color:#fff
+    style PM fill:#ff9ff3,stroke:#fff,stroke-width:2px,color:#fff
+```
+
 ## Quick Start
 
 ```bash
@@ -49,6 +99,52 @@ Examples:
 - `workflow.events.execution.completed`
 - `graph.commands.structure.add_node`
 
+```mermaid
+graph TD
+    A[Subject Root] --> B[Domain]
+    B --> C[Message Type]
+    C --> D[Aggregate]
+    D --> E[Action]
+    
+    B --> B1[location]
+    B --> B2[workflow]
+    B --> B3[graph]
+    
+    C --> C1[commands]
+    C --> C2[events]
+    C --> C3[queries]
+    
+    D --> D1[location]
+    D --> D2[execution]
+    D --> D3[structure]
+    
+    E --> E1[define]
+    E --> E2[completed]
+    E --> E3[add_node]
+    
+    style A fill:#ff6b6b,stroke:#fff,stroke-width:4px,color:#fff
+    style B fill:#4ecdc4,stroke:#fff,stroke-width:3px,color:#fff
+    style C fill:#45b7d1,stroke:#fff,stroke-width:3px,color:#fff
+    style D fill:#96ceb4,stroke:#fff,stroke-width:3px,color:#fff
+    style E fill:#feca57,stroke:#fff,stroke-width:3px,color:#fff
+    
+    style B1 fill:#4ecdc4,stroke:#fff,stroke-width:2px,color:#fff
+    style B2 fill:#4ecdc4,stroke:#fff,stroke-width:2px,color:#fff
+    style B3 fill:#4ecdc4,stroke:#fff,stroke-width:2px,color:#fff
+    
+    style C1 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style C2 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style C3 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    
+    style D1 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style D2 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style D3 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    
+    style E1 fill:#feca57,stroke:#fff,stroke-width:2px,color:#fff
+    style E2 fill:#feca57,stroke:#fff,stroke-width:2px,color:#fff
+    style E3 fill:#feca57,stroke:#fff,stroke-width:2px,color:#fff
+```
+
 ### 2. Message Identity
 
 Every message in the system carries a `MessageIdentity` that tracks its lineage:
@@ -73,6 +169,34 @@ The module enforces these rules for message tracking:
   - New message's `causation_id = parent.message_id`
   
 This creates a complete audit trail of message flows through the system.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant OrderService
+    participant InventoryService
+    participant PaymentService
+    
+    User->>OrderService: CreateOrder (M1)
+    Note over OrderService: message_id: M1<br/>correlation_id: M1<br/>causation_id: M1
+    
+    OrderService->>InventoryService: ReserveStock (M2)
+    Note over InventoryService: message_id: M2<br/>correlation_id: M1<br/>causation_id: M1
+    
+    OrderService->>PaymentService: ProcessPayment (M3)
+    Note over PaymentService: message_id: M3<br/>correlation_id: M1<br/>causation_id: M1
+    
+    InventoryService-->>OrderService: StockReserved (M4)
+    Note over OrderService: message_id: M4<br/>correlation_id: M1<br/>causation_id: M2
+    
+    PaymentService-->>OrderService: PaymentProcessed (M5)
+    Note over OrderService: message_id: M5<br/>correlation_id: M1<br/>causation_id: M3
+    
+    OrderService-->>User: OrderConfirmed (M6)
+    Note over User: message_id: M6<br/>correlation_id: M1<br/>causation_id: M1
+    
+    %%{init: {'theme':'dark', 'themeVariables': { 'primaryColor':'#ff6b6b', 'primaryTextColor':'#fff', 'primaryBorderColor':'#fff', 'lineColor':'#4ecdc4', 'secondaryColor':'#45b7d1', 'tertiaryColor':'#96ceb4', 'background':'#2d3436', 'mainBkg':'#2d3436', 'secondBkg':'#636e72', 'tertiaryBkg':'#95a5a6', 'darkMode':'true'}}}%%
+```
 
 ## DDD Implementation
 
@@ -146,6 +270,64 @@ The subject hierarchy forms a lattice structure supporting:
 - **Join (⊔)**: Find the least common ancestor of subjects
 - **Meet (⊓)**: Find the greatest common descendant
 
+```mermaid
+graph TB
+    subgraph "Algebraic Operations"
+        A1[Sequential: A → B → C]
+        A2[Parallel: A ⊗ B ⊗ C]
+        A3[Choice: A ⊕ B ⊕ C]
+        A4[Lattice: A ⊔ B, A ⊓ B]
+    end
+    
+    subgraph "Sequential Example"
+        S1[Validate Order] --> S2[Reserve Inventory]
+        S2 --> S3[Process Payment]
+        S3 --> S4[Ship Order]
+    end
+    
+    subgraph "Parallel Example"
+        P0[Order Received]
+        P0 --> P1[Check Inventory]
+        P0 --> P2[Validate Customer]
+        P0 --> P3[Calculate Pricing]
+        P1 --> P4[All Complete]
+        P2 --> P4
+        P3 --> P4
+    end
+    
+    subgraph "Choice Example"
+        C1[Payment Method?]
+        C1 -->|Credit Card| C2[Process Card]
+        C1 -->|PayPal| C3[Process PayPal]
+        C1 -->|Bank Transfer| C4[Process Transfer]
+        C2 --> C5[Payment Complete]
+        C3 --> C5
+        C4 --> C5
+    end
+    
+    style A1 fill:#ff6b6b,stroke:#fff,stroke-width:3px,color:#fff
+    style A2 fill:#4ecdc4,stroke:#fff,stroke-width:3px,color:#fff
+    style A3 fill:#feca57,stroke:#fff,stroke-width:3px,color:#fff
+    style A4 fill:#ff9ff3,stroke:#fff,stroke-width:3px,color:#fff
+    
+    style S1 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style S2 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style S3 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style S4 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    
+    style P0 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style P1 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style P2 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style P3 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style P4 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    
+    style C1 fill:#dfe6e9,stroke:#2d3436,stroke-width:2px,color:#2d3436
+    style C2 fill:#fd79a8,stroke:#fff,stroke-width:2px,color:#fff
+    style C3 fill:#fdcb6e,stroke:#fff,stroke-width:2px,color:#fff
+    style C4 fill:#6c5ce7,stroke:#fff,stroke-width:2px,color:#fff
+    style C5 fill:#00b894,stroke:#fff,stroke-width:2px,color:#fff
+```
+
 ## Message Routing Patterns
 
 ### Pattern Matching
@@ -159,6 +341,52 @@ Examples:
 ```
 location.events.* - Matches all location event types
 workflow.*.execution.> - Matches all execution-related messages across workflow types
+```
+
+```mermaid
+graph LR
+    subgraph "Publishers"
+        P1[location.events.created]
+        P2[location.events.updated]
+        P3[location.events.deleted]
+        P4[workflow.commands.execution.start]
+        P5[workflow.events.execution.completed]
+    end
+    
+    subgraph "Subscribers"
+        S1[location.events.*]
+        S2[location.events.>]
+        S3[workflow.*.execution.>]
+        S4[*.events.>]
+    end
+    
+    P1 -.->|matches| S1
+    P1 -.->|matches| S2
+    P1 -.->|matches| S4
+    
+    P2 -.->|matches| S1
+    P2 -.->|matches| S2
+    P2 -.->|matches| S4
+    
+    P3 -.->|matches| S1
+    P3 -.->|matches| S2
+    P3 -.->|matches| S4
+    
+    P4 -.->|matches| S3
+    
+    P5 -.->|matches| S3
+    P5 -.->|matches| S4
+    
+    style P1 fill:#ff6b6b,stroke:#fff,stroke-width:2px,color:#fff
+    style P2 fill:#ff6b6b,stroke:#fff,stroke-width:2px,color:#fff
+    style P3 fill:#ff6b6b,stroke:#fff,stroke-width:2px,color:#fff
+    style P4 fill:#feca57,stroke:#fff,stroke-width:2px,color:#fff
+    style P5 fill:#4ecdc4,stroke:#fff,stroke-width:2px,color:#fff
+    
+    style S1 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style S2 fill:#45b7d1,stroke:#fff,stroke-width:2px,color:#fff
+    style S3 fill:#96ceb4,stroke:#fff,stroke-width:2px,color:#fff
+    style S4 fill:#ff9ff3,stroke:#fff,stroke-width:2px,color:#fff
 ```
 
 ### Subject Translation
