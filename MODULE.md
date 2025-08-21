@@ -11,7 +11,7 @@ The `cim-subject` module is a foundational component of the CIM (Composable Info
 - **Name**: cim-subject
 - **Version**: 0.5.0
 - **License**: MIT
-- **Repository**: https://github.com/thecowboyai/cim-subject
+- **Repository**: https://github.com/TheCowboyAI/cim-subject
 - **Crate**: https://crates.io/crates/cim-subject
 
 ## Purpose

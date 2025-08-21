@@ -7,7 +7,7 @@ edition = "2021"
 authors = ["The CowboyAI Team"]
 description = "Subject Algebra for NATS-based domain routing and message translation"
 license = "MIT"
-repository = "https://github.com/thecowboyai/cim-subject"
+repository = "https://github.com/TheCowboyAI/cim-subject"
 keywords = ["subject", "nats", "routing", "domain", "algebra"]
 categories = ["network-programming", "data-structures"]
 
@@ -30,7 +30,7 @@ dashmap = "6.1"
 
 # IDs and correlation
 uuid = { version = "1.11", features = ["v4", "serde"] }
-cim-ipld = { git = "https://github.com/thecowboyai/cim-ipld", version = "0.5" }
+cim-ipld = { git = "https://github.com/TheCowboyAI/cim-ipld", version = "0.5" }
 
 [dev-dependencies]
 # Testing
